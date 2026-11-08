@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>幸運戳戳樂抽獎系統</title>
+  <title>派對活動遊戲整合工具｜幸運戳戳樂 & 終極密碼</title>
   <style>
     :root {
       --bg-gradient: linear-gradient(135deg, #170f36 0%, #2b194d 50%, #131c38 100%);
@@ -13,6 +13,7 @@
       --accent-gold-dark: #f4a261;
       --accent-pink: #ef476f;
       --accent-cyan: #06d6a0;
+      --accent-blue: #4cc9f0;
       --text-main: #ffffff;
       --text-muted: #c2bce0;
     }
@@ -47,7 +48,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.35);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--card-border);
       position: sticky;
@@ -77,7 +78,7 @@
     }
 
     .brand h1 {
-      font-size: 1.45rem;
+      font-size: 1.4rem;
       font-weight: 800;
       background: linear-gradient(90deg, #ffd166, #ff9f1c, #ffffff);
       -webkit-background-clip: text;
@@ -94,6 +95,7 @@
       border-radius: 999px;
       border: 1px solid var(--card-border);
       gap: 4px;
+      flex-wrap: wrap;
     }
 
     .nav-tab {
@@ -136,6 +138,14 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .draw-only-action {
+      display: inline-flex;
+    }
+
+    body.mode-other .draw-only-action {
+      display: none !important;
     }
 
     /* Cloud Sync Status Pill */
@@ -262,6 +272,17 @@
       background: linear-gradient(135deg, #ff5c82, #ef233c);
     }
 
+    .btn-cyan {
+      background: linear-gradient(135deg, #06d6a0, #118ab2);
+      color: #081c24;
+      border: none;
+      box-shadow: 0 4px 14px rgba(6, 214, 160, 0.35);
+    }
+
+    .btn-cyan:hover:not(:disabled) {
+      background: linear-gradient(135deg, #2ce6b5, #17a2cf);
+    }
+
     /* View Containers */
     .view-section {
       display: none;
@@ -359,7 +380,6 @@
       transform: translateY(-4px) scale(1.03);
     }
 
-    /* Roulette Jump Spotlight Effect */
     .cell.roulette-active .cell-inner {
       transform: translateY(-6px) scale(1.08);
       box-shadow: 0 0 28px 6px #ffd166, 0 0 12px 2px #ffffff;
@@ -402,7 +422,6 @@
       overflow: hidden;
     }
 
-    /* Unopened Box Styling */
     .cell-front {
       background: linear-gradient(145deg, #e63946, #9d1785);
       border: 2px solid rgba(255, 209, 102, 0.65);
@@ -456,7 +475,6 @@
       white-space: nowrap;
     }
 
-    /* Opened Box Styling */
     .cell-back {
       transform: rotateY(180deg);
       background: rgba(255, 255, 255, 0.1);
@@ -597,7 +615,6 @@
       flex-shrink: 0;
     }
 
-    /* Current Round Winner List */
     .round-winners-list {
       display: flex;
       flex-direction: column;
@@ -673,7 +690,194 @@
     }
 
     /* ============================================
-       Play Records Tab View (以「整局」為單位的紀錄分頁)
+       終極密碼 (Ultimate Code) 分頁樣式
+       ============================================ */
+    .uc-layout {
+      display: grid;
+      grid-template-columns: 1fr 370px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .uc-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .uc-stage-card {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.1) 0%, rgba(18, 12, 42, 0.65) 100%);
+      border: 2px solid rgba(255, 209, 102, 0.35);
+      border-radius: 26px;
+      padding: 28px 26px;
+      text-align: center;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .uc-stage-card.exploded {
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 45px rgba(239, 71, 111, 0.45);
+    }
+
+    .uc-top-tags {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .uc-tag {
+      padding: 5px 15px;
+      border-radius: 99px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      white-space: nowrap;
+    }
+
+    .uc-tag.gold {
+      background: rgba(255, 209, 102, 0.18);
+      border-color: rgba(255, 209, 102, 0.5);
+      color: var(--accent-gold);
+    }
+
+    .uc-range-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin: 8px 0;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .uc-bound-box {
+      background: rgba(0, 0, 0, 0.42);
+      border: 2px solid rgba(76, 201, 240, 0.5);
+      border-radius: 22px;
+      padding: 18px 28px;
+      min-width: 145px;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .uc-bound-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+
+    .uc-bound-num {
+      font-size: 3.1rem;
+      font-weight: 900;
+      color: #4cc9f0;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    .uc-vs-arrow {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent-gold);
+      white-space: nowrap;
+    }
+
+    /* Visual Range Bar */
+    .uc-progress-wrap {
+      width: 100%;
+      max-width: 560px;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .uc-progress-active {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, #06d6a0, #ffd166, #ef476f);
+      border-radius: 99px;
+      transition: left 0.35s ease, width 0.35s ease;
+    }
+
+    .uc-hint-msg {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      min-height: 1.6em;
+      padding: 6px 18px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.28);
+    }
+
+    .uc-input-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 480px;
+      margin-top: 4px;
+    }
+
+    .uc-guess-input {
+      flex: 1;
+      min-width: 160px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 2px solid var(--accent-gold);
+      border-radius: 99px;
+      padding: 12px 20px;
+      color: #fff;
+      font-size: 1.35rem;
+      font-weight: 900;
+      text-align: center;
+      outline: none;
+    }
+
+    .uc-guess-input:focus {
+      box-shadow: 0 0 18px rgba(255, 209, 102, 0.45);
+    }
+
+    .uc-guesses-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 640px;
+      margin-top: 8px;
+    }
+
+    .uc-chip {
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      white-space: nowrap;
+    }
+
+    .uc-chip.hit {
+      background: linear-gradient(135deg, #ef476f, #ffd166);
+      color: #1a103c;
+      border: none;
+    }
+
+    /* ============================================
+       Play Records Tab View (各局遊玩紀錄分頁)
        ============================================ */
     .records-header-card {
       background: var(--card-bg);
@@ -686,6 +890,13 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 14px;
+    }
+
+    .records-subtabs {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
     }
 
     .records-filter-bar {
@@ -1133,6 +1344,33 @@
       flex-wrap: wrap;
     }
 
+    /* Radio Pill Selector */
+    .mode-selector {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-option {
+      flex: 1;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .mode-option.active {
+      background: rgba(255, 209, 102, 0.2);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
     /* Confetti Canvas */
     #confetti-canvas {
       position: fixed;
@@ -1149,13 +1387,14 @@
   <header>
     <div class="brand-group">
       <div class="brand">
-        <span class="brand-icon">🎁</span>
-        <h1>幸運戳戳樂抽獎</h1>
+        <span class="brand-icon">🎮</span>
+        <h1>派對活動遊戲整合工具</h1>
       </div>
 
-      <!-- 分頁切換：抽獎主畫面 vs 遊玩紀錄（以整局為單位） -->
+      <!-- 3 大主分頁切換：幸運戳戳樂 vs 終極密碼 vs 各局遊玩紀錄 -->
       <div class="nav-tabs">
-        <button class="nav-tab active" id="tabBtnGame">🎯 抽獎面板</button>
+        <button class="nav-tab active" id="tabBtnGame">🎁 幸運戳戳樂</button>
+        <button class="nav-tab" id="tabBtnUltimate">💣 終極密碼</button>
         <button class="nav-tab" id="tabBtnRecords">
           📜 各局遊玩紀錄
           <span class="tab-badge" id="recordsCountBadge">1 局</span>
@@ -1170,20 +1409,22 @@
         <span id="cloudSyncText">雲端已同步</span>
       </div>
 
-      <!-- 叫號輸入框 -->
-      <div class="call-bar">
+      <!-- 叫號輸入框 (僅在戳戳樂分頁顯示) -->
+      <div class="call-bar draw-only-action">
         <input type="number" id="callNumberInput" placeholder="輸入號碼" min="1">
         <button class="btn btn-gold" id="callNumberBtn" style="padding: 6px 14px;">叫號開獎</button>
       </div>
 
-      <button class="btn btn-gold" id="randomPickBtn" title="輪盤跳號隨機抽出一個未開的號碼">🎰 隨機輪盤抽號</button>
+      <button class="btn btn-gold draw-only-action" id="randomPickBtn" title="輪盤跳號隨機抽出一個未開的號碼">🎰 隨機輪盤抽號</button>
       <button class="btn" id="soundToggleBtn">🔊 音效：開</button>
-      <button class="btn" id="openSettingsBtn">⚙️ 獎項與格子設定</button>
-      <button class="btn btn-pink" id="resetBoardBtn">🔄 開啟下一局</button>
+      <button class="btn draw-only-action" id="openSettingsBtn">⚙️ 抽獎設定</button>
+      <button class="btn btn-pink draw-only-action" id="resetBoardBtn">🔄 開啟下一局</button>
     </div>
   </header>
 
-  <!-- 分頁 1：抽獎主畫面 -->
+  <!-- ==========================================
+       分頁 1：幸運戳戳樂抽獎
+       ========================================== -->
   <section class="view-section active" id="viewGame">
     <div class="game-layout">
       <!-- 左側：抽獎格面板 -->
@@ -1223,27 +1464,140 @@
     </div>
   </section>
 
-  <!-- 分頁 2：以「一整局」為單位的遊玩紀錄分頁 -->
+  <!-- ==========================================
+       分頁 2：終極密碼 (Ultimate Code)
+       ========================================== -->
+  <section class="view-section" id="viewUltimate">
+    <div class="uc-layout">
+      <!-- 左側：終極密碼主舞台 -->
+      <div class="uc-stage-card" id="ucStageCard">
+        <div class="uc-top-tags">
+          <span class="uc-tag gold" id="ucRoundTag">第 1 局</span>
+          <span class="uc-tag" id="ucPrizeTag">🎁 本局獎勵：神秘大獎</span>
+          <span class="uc-tag" id="ucGuessCountTag">已猜 0 次</span>
+        </div>
+
+        <div class="uc-range-banner">
+          <div class="uc-bound-box">
+            <div class="uc-bound-label">最小邊界 (MIN)</div>
+            <div class="uc-bound-num" id="ucCurrentMin">1</div>
+          </div>
+          <div class="uc-vs-arrow">～</div>
+          <div class="uc-bound-box">
+            <div class="uc-bound-label">最大邊界 (MAX)</div>
+            <div class="uc-bound-num" id="ucCurrentMax">100</div>
+          </div>
+        </div>
+
+        <!-- 區間視覺進度條 -->
+        <div class="uc-progress-wrap">
+          <div class="uc-progress-active" id="ucProgressBar" style="left: 0%; width: 100%;"></div>
+        </div>
+
+        <div class="uc-hint-msg" id="ucHintMsg">
+          請輸入上方區間內的數字進行猜測！
+        </div>
+
+        <!-- 猜數字輸入區 -->
+        <div class="uc-input-group" id="ucPlayInputGroup">
+          <input type="number" id="ucGuessInput" class="uc-guess-input" placeholder="輸入數字">
+          <button class="btn btn-gold" id="ucSubmitGuessBtn" style="padding: 13px 26px; font-size: 1.05rem;">
+            💥 確認猜號
+          </button>
+        </div>
+
+        <!-- 已經猜過的數字軌跡 -->
+        <div style="width: 100%; margin-top: 6px;">
+          <div style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 700;">
+            🔢 本局猜測軌跡：
+          </div>
+          <div class="uc-guesses-chips" id="ucGuessesChips">
+            <span style="color: var(--text-muted); font-size: 0.85rem;">尚無猜測紀錄</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右側：終極密碼局數設定與本局得主 -->
+      <aside class="sidebar">
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>⚙️ 終極密碼開局設定</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ucInputMin">最小數字 (Min)</label>
+              <input type="number" id="ucInputMin" class="form-control" value="1">
+            </div>
+            <div class="form-group">
+              <label for="ucInputMax">最大數字 (Max)</label>
+              <input type="number" id="ucInputMax" class="form-control" value="100">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ucInputPrize">🎁 本局獎勵內容（或懲罰項目）</label>
+            <input type="text" id="ucInputPrize" class="form-control" value="🧧 終極大獎：現金紅包 1,000 元" placeholder="例如：現金紅包 1,000 元">
+          </div>
+
+          <div class="form-group">
+            <label>🔐 密碼產生方式</label>
+            <div class="mode-selector">
+              <div class="mode-option active" id="ucModeRandomBtn">🎲 系統隨機密碼</div>
+              <div class="mode-option" id="ucModeCustomBtn">✍️ 自行輸入密碼</div>
+            </div>
+          </div>
+
+          <div class="form-group" id="ucCustomSecretBox" style="display: none;">
+            <label for="ucInputCustomSecret">請輸入本局指定密碼（輸入時自動遮蔽防偷看）</label>
+            <input type="password" id="ucInputCustomSecret" class="form-control" placeholder="請輸入範圍內的整數密碼" autocomplete="off">
+          </div>
+
+          <button class="btn btn-gold" id="ucStartNewRoundBtn" style="width: 100%; padding: 11px; margin-top: 4px; font-size: 0.98rem;">
+            🚀 套用設定並開啟新一局
+          </button>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-title">
+            <span>🏆 終極密碼最近局數結果</span>
+            <span style="font-size: 0.76rem; color: var(--text-muted); font-weight: 600;">點擊可改贏家</span>
+          </div>
+          <div class="round-winners-list" id="ucRecentSessionsList"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       分頁 3：各局遊玩紀錄（支援戳戳樂 & 終極密碼）
+       ========================================== -->
   <section class="view-section" id="viewRecords">
     <div class="records-header-card">
       <div>
         <h2 style="font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 4px;">📜 歷局完整遊玩紀錄（以局為單位）</h2>
         <p style="font-size: 0.86rem; color: var(--text-muted);">
-          每一局的整盤抽獎進度與得主名單皆獨立保存為一筆局數紀錄；當本局抽完或點擊「開啟下一局」時，會自動建立新一局的紀錄，舊局完整保留直到手動刪除。
+          每一局的完整結果與贏家姓名皆獨立保存並同步至雲端（未開出的內容全程保密防作弊），直到您手動刪除。
         </p>
+        <div class="records-subtabs">
+          <button class="btn btn-gold" id="recSubTabDraw">🎁 幸運戳戳樂紀錄 (<span id="recDrawCount">0</span> 局)</button>
+          <button class="btn" id="recSubTabUltimate">💣 終極密碼紀錄 (<span id="recUcCount">0</span> 局)</button>
+        </div>
       </div>
 
       <div class="records-filter-bar">
-        <input type="text" id="recordSearchInput" class="form-control" placeholder="🔍 搜尋玩家姓名或獎項..." style="width: 210px; padding: 8px 12px;">
-        <button class="btn" id="exportCsvBtn">📥 匯出全部局數 CSV</button>
-        <button class="btn btn-pink" id="clearAllRecordsBtn">🗑️ 清空歷史局數紀錄</button>
+        <input type="text" id="recordSearchInput" class="form-control" placeholder="🔍 搜尋贏家姓名或獎項..." style="width: 210px; padding: 8px 12px;">
+        <button class="btn" id="exportCsvBtn">📥 匯出 CSV</button>
+        <button class="btn btn-pink" id="clearAllRecordsBtn">🗑️ 清空目前分類歷史紀錄</button>
       </div>
     </div>
 
     <div class="sessions-container" id="sessionsContainer"></div>
   </section>
 
-  <!-- 中獎彈出視窗（含輸入玩家姓名） -->
+  <!-- ==========================================
+       中獎 / 猜中密碼 彈出視窗（含輸入贏家姓名）
+       ========================================== -->
   <div class="modal-backdrop" id="winnerModalBackdrop">
     <div class="winner-modal" id="winnerModalCard">
       <div class="winner-number-tag" id="winnerNumberTag">第 1 號格</div>
@@ -1254,8 +1608,8 @@
       <div class="winner-prize-name" id="winnerPrizeName">頭獎</div>
 
       <div class="winner-player-box">
-        <label for="winnerPlayerInput">👤 中獎玩家姓名 / 暱稱（選填，方便紀錄發放）：</label>
-        <input type="text" id="winnerPlayerInput" placeholder="請輸入得主名字，例如：小明">
+        <label for="winnerPlayerInput" id="winnerPlayerLabel">👤 中獎玩家姓名 / 暱稱（選填，方便紀錄發放）：</label>
+        <input type="text" id="winnerPlayerInput" placeholder="請輸入贏家名字，例如：小明">
       </div>
 
       <button class="btn btn-gold" id="confirmWinnerBtn" style="width: 100%; padding: 12px 24px; font-size: 1.02rem;">
@@ -1264,11 +1618,13 @@
     </div>
   </div>
 
-  <!-- 獎項與格子設定視窗 -->
+  <!-- ==========================================
+       戳戳樂獎項與雲端房間設定視窗
+       ========================================== -->
   <div class="modal-backdrop" id="settingsModalBackdrop">
     <div class="settings-modal">
       <div class="settings-header">
-        <h2>⚙️ 抽獎活動與雲端同步設定</h2>
+        <h2>⚙️ 幸運戳戳樂與雲端同步設定</h2>
         <button class="btn" id="closeSettingsCrossBtn" style="padding: 4px 10px;">✕</button>
       </div>
 
@@ -1313,7 +1669,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'LUCKY_DRAW_STATE_V3';
+    const STORAGE_KEY = 'PARTY_GAMES_SUITE_STATE_V4';
     const DEFAULT_CLOUD_ROOM = 'nono86433_lucky_draw_v1';
 
     const defaultConfig = {
@@ -1327,37 +1683,48 @@
       ]
     };
 
-    /**
-     * 資料結構設計：
-     * - gameSessions: 儲存每一整局的完整紀錄陣列（最新局排最前面）
-     *   每個 session 物件包含：
-     *   {
-     *     sessionId: 'sess_...',
-     *     roundNumber: 1,
-     *     startedAt: '2026/11/08 23:20:00',
-     *     completedAt: '' | '2026/11/08 23:35:00',
-     *     totalCells: 25,
-     *     cells: [ { number, prizeName, isGrand, prizeId, opened, winnerName, openedAt } ]
-     *   }
-     */
+    const defaultUltimateGame = {
+      roundNumber: 1,
+      currentSessionId: '',
+      min: 1,
+      max: 100,
+      currentMin: 1,
+      currentMax: 100,
+      secretCode: 50,
+      mode: 'random', // 'random' | 'custom'
+      prizeName: '🧧 終極大獎：現金紅包 1,000 元',
+      status: 'playing', // 'playing' | 'completed'
+      winnerName: '',
+      guesses: [], // [{ number, result: 'low' | 'high' | 'hit', time }]
+      startedAt: '',
+      completedAt: ''
+    };
+
     let state = {
-      version: 3,
+      version: 4,
       updatedAt: 0,
       roundNumber: 1,
       currentSessionId: '',
       cloudRoom: DEFAULT_CLOUD_ROOM,
       config: JSON.parse(JSON.stringify(defaultConfig)),
       cells: [],
-      gameSessions: [],
+      gameSessions: [],       // 幸運戳戳樂各局紀錄
+      ultimateGame: JSON.parse(JSON.stringify(defaultUltimateGame)),
+      ultimateSessions: [],   // 終極密碼各局紀錄
       soundEnabled: true
     };
 
-    // 記錄哪些局數卡片在「遊玩紀錄」分頁中處於展開狀態
     const expandedSessionIds = new Set();
-    let showOnlyOpenedInSession = {}; // { [sessionId]: boolean }
+    let showOnlyOpenedInSession = {};
+    let activeRecordsType = 'draw'; // 'draw' | 'ultimate'
 
-    let currentEditingSessionId = null;
-    let currentEditingCellNumber = null;
+    // 彈窗編輯目標 ('draw' 或 'ultimate')
+    let modalContext = {
+      gameType: 'draw',
+      sessionId: null,
+      cellNumber: null
+    };
+
     let isAnimating = false;
     let cloudSocket = null;
 
@@ -1448,7 +1815,7 @@
 
     function getCloudTopic() {
       const clean = (state.cloudRoom || DEFAULT_CLOUD_ROOM).replace(/[^a-zA-Z0-9_-]/g, '_');
-      return `lucky_draw_sync_v3_${clean}`;
+      return `lucky_draw_sync_v4_${clean}`;
     }
 
     function syncCurrentCellsIntoSession() {
@@ -1462,21 +1829,45 @@
       }
     }
 
+    function syncCurrentUltimateIntoSession() {
+      if (!state.ultimateGame || !state.ultimateGame.currentSessionId) return;
+      const idx = state.ultimateSessions.findIndex(s => s.sessionId === state.ultimateGame.currentSessionId);
+      if (idx !== -1) {
+        state.ultimateSessions[idx] = {
+          ...state.ultimateSessions[idx],
+          min: state.ultimateGame.min,
+          max: state.ultimateGame.max,
+          currentMin: state.ultimateGame.currentMin,
+          currentMax: state.ultimateGame.currentMax,
+          secretCode: state.ultimateGame.secretCode,
+          mode: state.ultimateGame.mode,
+          prizeName: state.ultimateGame.prizeName,
+          status: state.ultimateGame.status,
+          winnerName: state.ultimateGame.winnerName,
+          guesses: JSON.parse(JSON.stringify(state.ultimateGame.guesses || [])),
+          completedAt: state.ultimateGame.completedAt || ''
+        };
+      }
+    }
+
     async function pushStateToCloud() {
       syncCurrentCellsIntoSession();
+      syncCurrentUltimateIntoSession();
       state.updatedAt = Date.now();
       saveLocalState();
       const topic = getCloudTopic();
       setSyncBadge('syncing', '雲端同步中...');
       try {
         const payload = {
-          type: 'FULL_STATE_V3',
+          type: 'FULL_STATE_V4',
           updatedAt: state.updatedAt,
           roundNumber: state.roundNumber,
           currentSessionId: state.currentSessionId,
           config: state.config,
           cells: state.cells,
-          gameSessions: state.gameSessions
+          gameSessions: state.gameSessions,
+          ultimateGame: state.ultimateGame,
+          ultimateSessions: state.ultimateSessions
         };
         await fetch(`https://ntfy.sh/${topic}`, {
           method: 'POST',
@@ -1505,7 +1896,7 @@
             const msg = JSON.parse(line);
             if (msg.event === 'message' && msg.message) {
               const parsed = JSON.parse(msg.message);
-              if (parsed && parsed.type === 'FULL_STATE_V3' && Array.isArray(parsed.cells)) {
+              if (parsed && parsed.type === 'FULL_STATE_V4' && Array.isArray(parsed.cells)) {
                 if (!latestCloudState || (parsed.updatedAt || 0) >= (latestCloudState.updatedAt || 0)) {
                   latestCloudState = parsed;
                 }
@@ -1535,9 +1926,12 @@
       if (remote.config) state.config = remote.config;
       if (Array.isArray(remote.cells)) state.cells = remote.cells;
       if (Array.isArray(remote.gameSessions)) state.gameSessions = remote.gameSessions;
-      if (state.currentSessionId) {
-        expandedSessionIds.add(state.currentSessionId);
-      }
+      if (remote.ultimateGame) state.ultimateGame = remote.ultimateGame;
+      if (Array.isArray(remote.ultimateSessions)) state.ultimateSessions = remote.ultimateSessions;
+
+      if (state.currentSessionId) expandedSessionIds.add(state.currentSessionId);
+      if (state.ultimateGame?.currentSessionId) expandedSessionIds.add(state.ultimateGame.currentSessionId);
+
       saveLocalState();
       renderAll();
     }
@@ -1557,7 +1951,7 @@
             const raw = JSON.parse(event.data);
             if (raw.event === 'message' && raw.message) {
               const data = JSON.parse(raw.message);
-              if (data && data.type === 'FULL_STATE_V3' && (data.updatedAt || 0) > (state.updatedAt || 0)) {
+              if (data && data.type === 'FULL_STATE_V4' && (data.updatedAt || 0) > (state.updatedAt || 0)) {
                 applyRemoteState(data);
               }
             }
@@ -1570,7 +1964,7 @@
     }
 
     // ==========================================
-    // 遊戲核心邏輯（以「整局」為單位建立與保存紀錄）
+    // 共用工具函式
     // ==========================================
     function formatDateTime(d) {
       const pad = (n) => String(n).padStart(2, '0');
@@ -1591,8 +1985,19 @@
       return copy;
     }
 
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // ==========================================
+    // 遊戲 1：幸運戳戳樂核心邏輯
+    // ==========================================
     function startNewRoundSession(config, isFirstInit = false) {
-      // 如果上一局完全還沒開過任何一格，直接覆蓋更新當前這一局即可，避免產生空白廢局
       const currentSession = state.gameSessions.find(s => s.sessionId === state.currentSessionId);
       const currentOpenedCount = state.cells.filter(c => c.opened).length;
 
@@ -1637,12 +2042,10 @@
       state.cells = newCells;
 
       if (!isFirstInit && currentSession && currentOpenedCount === 0) {
-        // 當前局一格都還沒抽過，直接重新洗牌當前局
         currentSession.startedAt = formatDateTime(new Date());
         currentSession.totalCells = total;
         currentSession.cells = JSON.parse(JSON.stringify(newCells));
       } else {
-        // 如果上一局有抽過，先將上一局封存，並建立新的一局紀錄
         if (currentSession && !currentSession.completedAt) {
           currentSession.completedAt = formatDateTime(new Date());
         }
@@ -1671,6 +2074,171 @@
       pushStateToCloud();
     }
 
+    // ==========================================
+    // 遊戲 2：終極密碼核心邏輯
+    // ==========================================
+    function startNewUltimateSession(options = {}, isFirstInit = false) {
+      const minVal = parseInt(options.min ?? state.ultimateGame.min ?? 1, 10);
+      const maxVal = parseInt(options.max ?? state.ultimateGame.max ?? 100, 10);
+      const prizeName = (options.prizeName ?? state.ultimateGame.prizeName ?? '🧧 終極大獎：現金紅包 1,000 元').trim();
+      const mode = options.mode || state.ultimateGame.mode || 'random';
+
+      let secretCode;
+      if (mode === 'custom' && options.customSecret !== undefined) {
+        secretCode = parseInt(options.customSecret, 10);
+      } else {
+        // 隨機產生 minVal ~ maxVal 之間的密碼（若範圍大於 2，盡量避開最邊界的兩個數字讓遊戲更刺激）
+        if (maxVal - minVal >= 2) {
+          secretCode = Math.floor(Math.random() * (maxVal - minVal - 1)) + minVal + 1;
+        } else {
+          secretCode = Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
+        }
+      }
+
+      const currentUcSess = state.ultimateSessions.find(s => s.sessionId === state.ultimateGame.currentSessionId);
+      const hasGuessed = Array.isArray(state.ultimateGame.guesses) && state.ultimateGame.guesses.length > 0;
+
+      if (!isFirstInit && currentUcSess && !hasGuessed && state.ultimateGame.status === 'playing') {
+        // 本局還沒猜過任何數字，直接更新當前局設定
+        state.ultimateGame = {
+          ...state.ultimateGame,
+          min: minVal,
+          max: maxVal,
+          currentMin: minVal,
+          currentMax: maxVal,
+          secretCode,
+          mode,
+          prizeName,
+          status: 'playing',
+          winnerName: '',
+          guesses: [],
+          startedAt: formatDateTime(new Date()),
+          completedAt: ''
+        };
+        syncCurrentUltimateIntoSession();
+      } else {
+        const maxRound = state.ultimateSessions.reduce((max, s) => Math.max(max, s.roundNumber || 0), 0);
+        const nextRound = isFirstInit && state.ultimateSessions.length === 0 ? 1 : maxRound + 1;
+        const newSessionId = `uc_${Date.now()}_r${nextRound}`;
+        const nowStr = formatDateTime(new Date());
+
+        state.ultimateGame = {
+          roundNumber: nextRound,
+          currentSessionId: newSessionId,
+          min: minVal,
+          max: maxVal,
+          currentMin: minVal,
+          currentMax: maxVal,
+          secretCode,
+          mode,
+          prizeName,
+          status: 'playing',
+          winnerName: '',
+          guesses: [],
+          startedAt: nowStr,
+          completedAt: ''
+        };
+
+        state.ultimateSessions.unshift({
+          sessionId: newSessionId,
+          roundNumber: nextRound,
+          min: minVal,
+          max: maxVal,
+          currentMin: minVal,
+          currentMax: maxVal,
+          secretCode,
+          mode,
+          prizeName,
+          status: 'playing',
+          winnerName: '',
+          guesses: [],
+          startedAt: nowStr,
+          completedAt: ''
+        });
+
+        expandedSessionIds.add(newSessionId);
+      }
+
+      renderAll();
+      pushStateToCloud();
+    }
+
+    function handleUltimateGuess() {
+      const ug = state.ultimateGame;
+      if (!ug) return;
+
+      if (ug.status === 'completed') {
+        alert('本局終極密碼已經結束囉！請點擊右側「🚀 套用設定並開啟新一局」開始新回合。');
+        return;
+      }
+
+      const inputEl = document.getElementById('ucGuessInput');
+      const val = parseInt(inputEl.value, 10);
+
+      if (isNaN(val)) {
+        alert('請輸入有效的整數數字！');
+        return;
+      }
+
+      if (val < ug.currentMin || val > ug.currentMax) {
+        alert(`⚠️ 請輸入目前有效區間（${ug.currentMin} ～ ${ug.currentMax}）之內的數字！`);
+        inputEl.select();
+        return;
+      }
+
+      inputEl.value = '';
+      const timeStr = formatShortTime(new Date());
+
+      if (val === ug.secretCode) {
+        // 猜中終極密碼！
+        ug.status = 'completed';
+        ug.completedAt = formatDateTime(new Date());
+        ug.guesses.push({
+          number: val,
+          result: 'hit',
+          rangeAfter: `💥 命中密碼 ${val}`,
+          time: timeStr
+        });
+
+        syncCurrentUltimateIntoSession();
+        renderAll();
+        pushStateToCloud();
+
+        showUltimateWinnerModal(ug.currentSessionId);
+      } else if (val < ug.secretCode) {
+        // 猜得比密碼小 -> 下限收縮至 val
+        ug.currentMin = val;
+        ug.guesses.push({
+          number: val,
+          result: 'low',
+          rangeAfter: `${ug.currentMin} ～ ${ug.currentMax}`,
+          time: timeStr
+        });
+        playSound('normal');
+        syncCurrentUltimateIntoSession();
+        renderAll();
+        pushStateToCloud();
+        inputEl.focus();
+      } else {
+        // 猜得比密碼大 -> 上限收縮至 val
+        ug.currentMax = val;
+        ug.guesses.push({
+          number: val,
+          result: 'high',
+          rangeAfter: `${ug.currentMin} ～ ${ug.currentMax}`,
+          time: timeStr
+        });
+        playSound('normal');
+        syncCurrentUltimateIntoSession();
+        renderAll();
+        pushStateToCloud();
+        inputEl.focus();
+      }
+    }
+
+    // ==========================================
+    // 本地儲存與初始化
+    // ==========================================
     function saveLocalState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -1685,14 +2253,15 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && parsed.config && Array.isArray(parsed.cells) && parsed.cells.length > 0 && Array.isArray(parsed.gameSessions)) {
+          if (parsed && parsed.config && Array.isArray(parsed.cells) && parsed.cells.length > 0) {
             state = {
               ...state,
-              ...parsed
+              ...parsed,
+              gameSessions: Array.isArray(parsed.gameSessions) ? parsed.gameSessions : [],
+              ultimateSessions: Array.isArray(parsed.ultimateSessions) ? parsed.ultimateSessions : []
             };
-            if (state.currentSessionId) {
-              expandedSessionIds.add(state.currentSessionId);
-            }
+            if (state.currentSessionId) expandedSessionIds.add(state.currentSessionId);
+            if (state.ultimateGame?.currentSessionId) expandedSessionIds.add(state.ultimateGame.currentSessionId);
             hasLocal = true;
           }
         }
@@ -1701,9 +2270,30 @@
       if (!hasLocal) {
         state.updatedAt = 0;
         startNewRoundSession(defaultConfig, true);
+        startNewUltimateSession({
+          min: 1,
+          max: 100,
+          prizeName: '🧧 終極大獎：現金紅包 1,000 元',
+          mode: 'random'
+        }, true);
         state.updatedAt = 0;
       } else {
+        if (!state.ultimateSessions || state.ultimateSessions.length === 0) {
+          startNewUltimateSession({
+            min: 1,
+            max: 100,
+            prizeName: '🧧 終極大獎：現金紅包 1,000 元',
+            mode: 'random'
+          }, true);
+        }
         renderAll();
+      }
+
+      // 同步右側終極密碼設定欄位預設值
+      if (state.ultimateGame) {
+        document.getElementById('ucInputMin').value = state.ultimateGame.min;
+        document.getElementById('ucInputMax').value = state.ultimateGame.max;
+        document.getElementById('ucInputPrize').value = state.ultimateGame.prizeName;
       }
 
       await pullStateFromCloud(false);
@@ -1718,10 +2308,15 @@
       renderBoard();
       renderPrizeStatus();
       renderRoundWinners();
+      renderUltimateView();
       renderSessionsView();
       updateSoundButton();
+
       document.getElementById('callNumberInput').max = state.cells.length;
-      document.getElementById('recordsCountBadge').textContent = `${state.gameSessions.length} 局`;
+      const totalSessionsCount = (state.gameSessions?.length || 0) + (state.ultimateSessions?.length || 0);
+      document.getElementById('recordsCountBadge').textContent = `${totalSessionsCount} 局`;
+      document.getElementById('recDrawCount').textContent = state.gameSessions?.length || 0;
+      document.getElementById('recUcCount').textContent = state.ultimateSessions?.length || 0;
     }
 
     function renderStats() {
@@ -1830,23 +2425,143 @@
         `;
 
         row.querySelector('.winner-player-tag').addEventListener('click', () => {
-          showWinnerModal(cell, state.currentSessionId);
+          showDrawWinnerModal(cell, state.currentSessionId);
         });
 
         listEl.appendChild(row);
       });
     }
 
-    // 渲染「各局遊玩紀錄」分頁（每一整局一張可展開卡片）
+    // 渲染「終極密碼」分頁
+    function renderUltimateView() {
+      const ug = state.ultimateGame;
+      if (!ug) return;
+
+      const stageCard = document.getElementById('ucStageCard');
+      document.getElementById('ucRoundTag').textContent = `第 ${ug.roundNumber || 1} 局`;
+      document.getElementById('ucPrizeTag').textContent = `🎁 本局獎勵：${ug.prizeName || '神秘大獎'}`;
+      document.getElementById('ucGuessCountTag').textContent = `已猜 ${(ug.guesses || []).length} 次`;
+
+      document.getElementById('ucCurrentMin').textContent = ug.currentMin;
+      document.getElementById('ucCurrentMax').textContent = ug.currentMax;
+
+      // 計算進度條區間位置
+      const totalSpan = Math.max(1, ug.max - ug.min);
+      const leftPct = Math.max(0, Math.min(100, ((ug.currentMin - ug.min) / totalSpan) * 100));
+      const widthPct = Math.max(2, Math.min(100 - leftPct, ((ug.currentMax - ug.currentMin) / totalSpan) * 100));
+      const barEl = document.getElementById('ucProgressBar');
+      barEl.style.left = `${leftPct}%`;
+      barEl.style.width = `${widthPct}%`;
+
+      const hintEl = document.getElementById('ucHintMsg');
+      const guessInput = document.getElementById('ucGuessInput');
+      const submitBtn = document.getElementById('ucSubmitGuessBtn');
+
+      if (ug.status === 'completed') {
+        stageCard.classList.add('exploded');
+        const winnerStr = ug.winnerName ? `（贏家：${ug.winnerName}）` : '';
+        hintEl.innerHTML = `💥 <strong>轟！終極密碼就是 <span style="color:var(--accent-gold);font-size:1.35rem;">${ug.secretCode}</span>！</strong> ${escapeHtml(winnerStr)}`;
+        guessInput.disabled = true;
+        submitBtn.disabled = true;
+      } else {
+        stageCard.classList.remove('exploded');
+        const lastGuess = ug.guesses && ug.guesses.length > 0 ? ug.guesses[ug.guesses.length - 1] : null;
+        if (lastGuess) {
+          hintEl.innerHTML = `上一猜 <strong>${lastGuess.number}</strong> 太${lastGuess.result === 'low' ? '小' : '大'}了！請猜 <strong>${ug.currentMin} ～ ${ug.currentMax}</strong> 之間的數字`;
+        } else {
+          hintEl.innerHTML = `請輸入 <strong>${ug.currentMin} ～ ${ug.currentMax}</strong> 之間的數字進行猜測！`;
+        }
+        guessInput.disabled = false;
+        submitBtn.disabled = false;
+        guessInput.min = ug.currentMin;
+        guessInput.max = ug.currentMax;
+      }
+
+      // 渲染本局猜測軌跡 Chips
+      const chipsWrap = document.getElementById('ucGuessesChips');
+      if (!ug.guesses || ug.guesses.length === 0) {
+        chipsWrap.innerHTML = `<span style="color: var(--text-muted); font-size: 0.85rem;">尚無猜測紀錄</span>`;
+      } else {
+        chipsWrap.innerHTML = '';
+        ug.guesses.forEach((g, idx) => {
+          const chip = document.createElement('span');
+          chip.className = `uc-chip ${g.result === 'hit' ? 'hit' : ''}`;
+          const arrow = g.result === 'hit' ? '💥 命中' : g.result === 'low' ? '🔼 太小' : '🔽 太大';
+          chip.textContent = `#${idx + 1}：${g.number} (${arrow})`;
+          chipsWrap.appendChild(chip);
+        });
+      }
+
+      // 渲染右側「終極密碼最近局數結果」
+      const recentListEl = document.getElementById('ucRecentSessionsList');
+      if (!state.ultimateSessions || state.ultimateSessions.length === 0) {
+        recentListEl.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 12px 0;">尚無局數紀錄</div>`;
+      } else {
+        recentListEl.innerHTML = '';
+        state.ultimateSessions.forEach((sess) => {
+          const isCompleted = sess.status === 'completed';
+          const row = document.createElement('div');
+          row.className = `winner-row ${isCompleted ? 'grand' : ''}`;
+
+          const secretDisplay = isCompleted ? `密碼 ${sess.secretCode}` : `進行中 (${sess.currentMin}~${sess.currentMax})`;
+          const playerLabel = isCompleted
+            ? (sess.winnerName ? `👤 贏家：${escapeHtml(sess.winnerName)} ✎` : `➕ 點此輸入贏家姓名`)
+            : `⏳ 尚未揭曉（密碼保密）`;
+
+          row.innerHTML = `
+            <div class="winner-row-left">
+              <span class="winner-num-pill">第 ${sess.roundNumber} 局</span>
+              <div class="winner-info-col">
+                <div class="winner-prize-label" title="${escapeHtml(sess.prizeName)}">${escapeHtml(sess.prizeName)} (${secretDisplay})</div>
+                <span class="winner-player-tag" style="${!isCompleted ? 'color:var(--text-muted);cursor:default;text-decoration:none;' : ''}">${playerLabel}</span>
+              </div>
+            </div>
+            <span class="nowrap" style="font-size: 0.75rem; color: var(--text-muted);">共 ${(sess.guesses || []).length} 猜</span>
+          `;
+
+          if (isCompleted) {
+            row.querySelector('.winner-player-tag').addEventListener('click', () => {
+              showUltimateWinnerModal(sess.sessionId);
+            });
+          }
+
+          recentListEl.appendChild(row);
+        });
+      }
+    }
+
+    // 渲染「各局遊玩紀錄」分頁（依子分頁切換：戳戳樂 vs 終極密碼）
     function renderSessionsView() {
       syncCurrentCellsIntoSession();
+      syncCurrentUltimateIntoSession();
+
+      // 更新子分頁按鈕樣式
+      const btnDraw = document.getElementById('recSubTabDraw');
+      const btnUc = document.getElementById('recSubTabUltimate');
+      if (activeRecordsType === 'draw') {
+        btnDraw.classList.add('btn-gold');
+        btnUc.classList.remove('btn-gold');
+      } else {
+        btnUc.classList.add('btn-gold');
+        btnDraw.classList.remove('btn-gold');
+      }
+
+      if (activeRecordsType === 'draw') {
+        renderDrawSessionsList();
+      } else {
+        renderUltimateSessionsList();
+      }
+    }
+
+    // 渲染戳戳樂各局紀錄卡片（含防作弊遮罩）
+    function renderDrawSessionsList() {
       const container = document.getElementById('sessionsContainer');
       const keyword = (document.getElementById('recordSearchInput')?.value || '').trim().toLowerCase();
 
       if (!state.gameSessions || state.gameSessions.length === 0) {
         container.innerHTML = `
           <div class="panel-card" style="text-align: center; color: var(--text-muted); padding: 36px;">
-            目前尚無任何局數紀錄
+            目前尚無任何幸運戳戳樂局數紀錄
           </div>
         `;
         return;
@@ -1862,12 +2577,10 @@
         const grandTotalCount = cells.filter(c => c.isGrand).length;
         const isAllOpened = cells.length > 0 && openedCount === cells.length;
 
-        // 防作弊保護：任何「尚未開啟 (!c.opened)」的格子，絕對不可在搜尋或紀錄中洩露獎項！
+        // 防作弊保護：未開啟的格子絕不比對獎項名稱
         const matchingCells = cells.filter((c) => {
           if (!keyword) return true;
-          if (!c.opened) {
-            return String(c.number).includes(keyword);
-          }
+          if (!c.opened) return String(c.number).includes(keyword);
           return (
             (c.prizeName || '').toLowerCase().includes(keyword) ||
             (c.winnerName || '').toLowerCase().includes(keyword) ||
@@ -1875,12 +2588,9 @@
           );
         });
 
-        if (keyword && matchingCells.length === 0) {
-          return;
-        }
+        if (keyword && matchingCells.length === 0) return;
 
         const isExpanded = expandedSessionIds.has(sess.sessionId) || Boolean(keyword);
-        // 紀錄表只列出「已開出」的格子，或將未開啟格子徹底遮蔽為「❓ 尚未開獎」防止偷看作弊
         const onlyOpened = showOnlyOpenedInSession[sess.sessionId] !== false;
         const displayCells = onlyOpened ? matchingCells.filter(c => c.opened) : matchingCells;
 
@@ -1894,7 +2604,7 @@
         card.innerHTML = `
           <div class="session-card-header">
             <div class="session-title-group">
-              <span class="session-round-badge">第 ${sess.roundNumber} 局</span>
+              <span class="session-round-badge">🎁 戳戳樂 第 ${sess.roundNumber} 局</span>
               ${statusBadgeHtml}
               <span class="nowrap" style="font-weight: 800; color: #fff;">
                 已抽 ${openedCount} / ${cells.length} 格（大獎已出 ${grandOpenedCount} / ${grandTotalCount}）
@@ -1939,9 +2649,7 @@
           </div>
         `;
 
-        // 點擊標題列展開/收合整局明細
-        const headerEl = card.querySelector('.session-card-header');
-        headerEl.addEventListener('click', (e) => {
+        card.querySelector('.session-card-header').addEventListener('click', (e) => {
           if (e.target.closest('.delete-session-btn')) return;
           if (expandedSessionIds.has(sess.sessionId)) {
             expandedSessionIds.delete(sess.sessionId);
@@ -1951,12 +2659,11 @@
           renderSessionsView();
         });
 
-        // 刪除整局紀錄按鈕
         const delBtn = card.querySelector('.delete-session-btn');
         if (delBtn) {
           delBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (confirm(`確定要永久刪除「第 ${sess.roundNumber} 局」的整局遊玩紀錄嗎？`)) {
+            if (confirm(`確定要永久刪除「戳戳樂 第 ${sess.roundNumber} 局」的整局遊玩紀錄嗎？`)) {
               state.gameSessions = state.gameSessions.filter(s => s.sessionId !== sess.sessionId);
               expandedSessionIds.delete(sess.sessionId);
               renderAll();
@@ -1965,14 +2672,11 @@
           });
         }
 
-        // 切換是否顯示未開啟格子
-        const toggleBtn = card.querySelector('.toggle-unopened-btn');
-        toggleBtn.addEventListener('click', () => {
+        card.querySelector('.toggle-unopened-btn').addEventListener('click', () => {
           showOnlyOpenedInSession[sess.sessionId] = !onlyOpened;
           renderSessionsView();
         });
 
-        // 填入該局每一格的資料列（未開啟的格子嚴格保密，不顯示類型與獎項名稱）
         const tbody = card.querySelector('.session-tbody');
         if (displayCells.length === 0) {
           tbody.innerHTML = `
@@ -1988,9 +2692,7 @@
             if (cell.opened) {
               tr.innerHTML = `
                 <td class="nowrap"><strong>#${cell.number}</strong></td>
-                <td class="nowrap">
-                  <span style="color: #06d6a0; font-weight: 800;">✅ 已開出</span>
-                </td>
+                <td class="nowrap"><span style="color: #06d6a0; font-weight: 800;">✅ 已開出</span></td>
                 <td class="nowrap">
                   <span class="record-type-badge ${cell.isGrand ? 'grand' : 'normal'}">
                     ${cell.isGrand ? '🏆 大獎' : '🎈 一般'}
@@ -2006,33 +2708,171 @@
                   ${escapeHtml(cell.openedAt || '-')}
                 </td>
               `;
-
               const inputEl = tr.querySelector('.inline-player-input');
               inputEl.addEventListener('change', () => {
                 updateSessionCellWinner(sess.sessionId, cell.number, inputEl.value.trim());
               });
             } else {
-              // 尚未開啟的格子：完全隱藏類型與獎勵內容，防止偷看作弊
               tr.innerHTML = `
                 <td class="nowrap"><strong>#${cell.number}</strong></td>
-                <td class="nowrap">
-                  <span style="color: var(--text-muted);">🔒 未開啟</span>
-                </td>
-                <td class="nowrap">
-                  <span class="record-type-badge normal" style="opacity: 0.6;">❓ 保密</span>
-                </td>
-                <td style="color: var(--text-muted); font-style: italic;">
-                  🔒 尚未開獎（內容保密）
-                </td>
-                <td style="color: var(--text-muted); font-size: 0.84rem;">
-                  -
-                </td>
-                <td class="nowrap" style="color: var(--text-muted); font-size: 0.84rem;">
-                  -
-                </td>
+                <td class="nowrap"><span style="color: var(--text-muted);">🔒 未開啟</span></td>
+                <td class="nowrap"><span class="record-type-badge normal" style="opacity: 0.6;">❓ 保密</span></td>
+                <td style="color: var(--text-muted); font-style: italic;">🔒 尚未開獎（內容保密）</td>
+                <td style="color: var(--text-muted); font-size: 0.84rem;">-</td>
+                <td class="nowrap" style="color: var(--text-muted); font-size: 0.84rem;">-</td>
               `;
             }
+            tbody.appendChild(tr);
+          });
+        }
 
+        container.appendChild(card);
+      });
+    }
+
+    // 渲染終極密碼各局紀錄卡片（進行中的局數密碼嚴格保密防作弊）
+    function renderUltimateSessionsList() {
+      const container = document.getElementById('sessionsContainer');
+      const keyword = (document.getElementById('recordSearchInput')?.value || '').trim().toLowerCase();
+
+      if (!state.ultimateSessions || state.ultimateSessions.length === 0) {
+        container.innerHTML = `
+          <div class="panel-card" style="text-align: center; color: var(--text-muted); padding: 36px;">
+            目前尚無任何終極密碼局數紀錄
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+
+      state.ultimateSessions.forEach((sess) => {
+        const isCurrent = sess.sessionId === state.ultimateGame?.currentSessionId;
+        const isCompleted = sess.status === 'completed';
+        const guesses = Array.isArray(sess.guesses) ? sess.guesses : [];
+
+        if (keyword) {
+          const matchPrize = (sess.prizeName || '').toLowerCase().includes(keyword);
+          const matchWinner = isCompleted && (sess.winnerName || '').toLowerCase().includes(keyword);
+          const matchSecret = isCompleted && String(sess.secretCode).includes(keyword);
+          if (!matchPrize && !matchWinner && !matchSecret) return;
+        }
+
+        const isExpanded = expandedSessionIds.has(sess.sessionId) || Boolean(keyword);
+        const card = document.createElement('div');
+        card.className = `session-card ${isCurrent ? 'current-session' : ''} ${isExpanded ? 'expanded' : ''}`;
+
+        const statusBadgeHtml = !isCompleted
+          ? `<span class="session-status-badge active">🟢 進行中（密碼保密）</span>`
+          : `<span class="session-status-badge completed">💥 已揭曉：密碼 ${sess.secretCode}</span>`;
+
+        card.innerHTML = `
+          <div class="session-card-header">
+            <div class="session-title-group">
+              <span class="session-round-badge">💣 終極密碼 第 ${sess.roundNumber} 局</span>
+              ${statusBadgeHtml}
+              <span class="nowrap" style="font-weight: 800; color: var(--accent-gold);">
+                🎁 ${escapeHtml(sess.prizeName)}
+              </span>
+              <span class="nowrap" style="color: var(--text-muted); font-size: 0.86rem;">
+                （區間 ${sess.min} ～ ${sess.max}｜共猜 ${guesses.length} 次）
+              </span>
+            </div>
+            <div class="session-meta-group">
+              <span class="nowrap">🕒 開局：${escapeHtml(sess.startedAt || '')}</span>
+              ${!isCurrent ? `<button type="button" class="btn-icon delete-uc-session-btn" title="刪除第 ${sess.roundNumber} 局紀錄">🗑️</button>` : ''}
+              <span class="nowrap" style="color: var(--accent-gold); font-weight: 800;">
+                ${isExpanded ? '▲ 收合明細' : '▼ 展開整局明細'}
+              </span>
+            </div>
+          </div>
+
+          <div class="session-card-body">
+            <div class="session-filter-row">
+              <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <span>🔐 終極密碼：<strong>${isCompleted ? sess.secretCode : '🔒 尚未揭曉（防作弊保密中）'}</strong></span>
+                <span>🎯 獎勵內容：<strong style="color: var(--accent-gold);">${escapeHtml(sess.prizeName)}</strong></span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="nowrap" style="font-size: 0.88rem; color: #06d6a0; font-weight: 700;">👤 本局贏家姓名：</span>
+                <input type="text" class="inline-player-input uc-winner-input" value="${escapeHtml(sess.winnerName || '')}" placeholder="${isCompleted ? '輸入贏家姓名...' : '待密碼揭曉後填寫'}" ${!isCompleted ? 'disabled' : ''}>
+              </div>
+            </div>
+
+            <div class="records-table-wrap">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>猜測順序</th>
+                    <th>玩家所猜數字</th>
+                    <th>判定結果</th>
+                    <th>剩餘有效區間</th>
+                    <th>時間</th>
+                  </tr>
+                </thead>
+                <tbody class="uc-session-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        `;
+
+        card.querySelector('.session-card-header').addEventListener('click', (e) => {
+          if (e.target.closest('.delete-uc-session-btn')) return;
+          if (expandedSessionIds.has(sess.sessionId)) {
+            expandedSessionIds.delete(sess.sessionId);
+          } else {
+            expandedSessionIds.add(sess.sessionId);
+          }
+          renderSessionsView();
+        });
+
+        const delBtn = card.querySelector('.delete-uc-session-btn');
+        if (delBtn) {
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`確定要永久刪除「終極密碼 第 ${sess.roundNumber} 局」的整局紀錄嗎？`)) {
+              state.ultimateSessions = state.ultimateSessions.filter(s => s.sessionId !== sess.sessionId);
+              expandedSessionIds.delete(sess.sessionId);
+              renderAll();
+              pushStateToCloud();
+            }
+          });
+        }
+
+        const winnerInput = card.querySelector('.uc-winner-input');
+        if (winnerInput) {
+          winnerInput.addEventListener('change', () => {
+            updateUltimateWinnerName(sess.sessionId, winnerInput.value.trim());
+          });
+        }
+
+        const tbody = card.querySelector('.uc-session-tbody');
+        if (guesses.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 18px;">
+                本局尚無猜測紀錄
+              </td>
+            </tr>
+          `;
+        } else {
+          guesses.forEach((g, idx) => {
+            const tr = document.createElement('tr');
+            const badgeHtml = g.result === 'hit'
+              ? `<span class="record-type-badge grand">💥 猜中終極密碼！</span>`
+              : g.result === 'low'
+                ? `<span class="record-type-badge normal">🔼 太小了（往上猜）</span>`
+                : `<span class="record-type-badge normal">🔽 太大了（往下猜）</span>`;
+
+            tr.innerHTML = `
+              <td class="nowrap">第 <strong>${idx + 1}</strong> 猜</td>
+              <td class="nowrap" style="font-size: 1.05rem; font-weight: 900; color: ${g.result === 'hit' ? 'var(--accent-gold)' : '#fff'};">
+                ${g.number}
+              </td>
+              <td class="nowrap">${badgeHtml}</td>
+              <td class="nowrap" style="font-weight: 700;">${escapeHtml(g.rangeAfter || '')}</td>
+              <td class="nowrap" style="color: var(--text-muted); font-size: 0.84rem;">${escapeHtml(g.time || '-')}</td>
+            `;
             tbody.appendChild(tr);
           });
         }
@@ -2057,8 +2897,20 @@
       pushStateToCloud();
     }
 
+    function updateUltimateWinnerName(sessionId, newName) {
+      const sess = state.ultimateSessions.find(s => s.sessionId === sessionId);
+      if (sess) {
+        sess.winnerName = newName;
+      }
+      if (state.ultimateGame && state.ultimateGame.currentSessionId === sessionId) {
+        state.ultimateGame.winnerName = newName;
+      }
+      renderAll();
+      pushStateToCloud();
+    }
+
     // ==========================================
-    // 開獎與隨機跳號輪盤動畫
+    // 戳戳樂開獎與隨機跳號輪盤動畫
     // ==========================================
     function triggerOpenCell(number) {
       if (isAnimating) return;
@@ -2069,7 +2921,7 @@
       }
 
       if (cell.opened) {
-        showWinnerModal(cell, state.currentSessionId);
+        showDrawWinnerModal(cell, state.currentSessionId);
         return;
       }
 
@@ -2097,13 +2949,12 @@
         pushStateToCloud();
 
         setTimeout(() => {
-          showWinnerModal(cell, state.currentSessionId);
+          showDrawWinnerModal(cell, state.currentSessionId);
           isAnimating = false;
         }, 280);
       }, 420);
     }
 
-    // 隨機跳號輪盤動畫
     function startRouletteRandomPick() {
       if (isAnimating) return;
       const unopened = state.cells.filter(c => !c.opened);
@@ -2164,11 +3015,14 @@
     }
 
     // ==========================================
-    // 中獎彈窗與玩家姓名綁定
+    // 共用中獎彈窗（支援戳戳樂 & 終極密碼贏家姓名輸入）
     // ==========================================
-    function showWinnerModal(cell, sessionId) {
-      currentEditingSessionId = sessionId || state.currentSessionId;
-      currentEditingCellNumber = cell.number;
+    function showDrawWinnerModal(cell, sessionId) {
+      modalContext = {
+        gameType: 'draw',
+        sessionId: sessionId || state.currentSessionId,
+        cellNumber: cell.number
+      };
 
       const backdrop = document.getElementById('winnerModalBackdrop');
       const card = document.getElementById('winnerModalCard');
@@ -2176,10 +3030,12 @@
       const icon = document.getElementById('winnerIcon');
       const subtitle = document.getElementById('winnerSubtitle');
       const prizeName = document.getElementById('winnerPrizeName');
+      const playerLabel = document.getElementById('winnerPlayerLabel');
       const playerInput = document.getElementById('winnerPlayerInput');
 
-      numTag.textContent = `第 ${state.roundNumber} 局 - 第 ${cell.number} 號格`;
+      numTag.textContent = `🎁 戳戳樂 第 ${state.roundNumber} 局 - 第 ${cell.number} 號格`;
       prizeName.textContent = cell.prizeName;
+      playerLabel.textContent = '👤 中獎玩家姓名 / 暱稱（選填，方便紀錄發放）：';
       playerInput.value = cell.winnerName || '';
 
       if (cell.isGrand) {
@@ -2199,30 +3055,68 @@
       setTimeout(() => playerInput.focus(), 120);
     }
 
+    function showUltimateWinnerModal(sessionId) {
+      const targetSess = state.ultimateSessions.find(s => s.sessionId === sessionId) || state.ultimateGame;
+      if (!targetSess) return;
+
+      modalContext = {
+        gameType: 'ultimate',
+        sessionId: sessionId || state.ultimateGame.currentSessionId,
+        cellNumber: null
+      };
+
+      const backdrop = document.getElementById('winnerModalBackdrop');
+      const card = document.getElementById('winnerModalCard');
+      const numTag = document.getElementById('winnerNumberTag');
+      const icon = document.getElementById('winnerIcon');
+      const subtitle = document.getElementById('winnerSubtitle');
+      const prizeName = document.getElementById('winnerPrizeName');
+      const playerLabel = document.getElementById('winnerPlayerLabel');
+      const playerInput = document.getElementById('winnerPlayerInput');
+
+      card.classList.remove('consolation');
+      numTag.textContent = `💣 終極密碼 第 ${targetSess.roundNumber} 局｜命中密碼 ${targetSess.secretCode}`;
+      icon.textContent = '💥';
+      subtitle.textContent = `🎉 恭喜命中終極密碼（共猜 ${(targetSess.guesses || []).length} 次）！獲得：`;
+      prizeName.textContent = targetSess.prizeName || '終極大獎';
+      playerLabel.textContent = '👑 請輸入本局終極密碼贏家姓名 / 暱稱：';
+      playerInput.value = targetSess.winnerName || '';
+
+      playSound('grand');
+      launchConfetti();
+
+      backdrop.classList.add('active');
+      setTimeout(() => playerInput.focus(), 120);
+    }
+
     function saveWinnerAndCloseModal() {
       const playerInput = document.getElementById('winnerPlayerInput');
       const playerName = playerInput.value.trim();
 
-      if (currentEditingCellNumber !== null) {
+      if (modalContext.gameType === 'draw' && modalContext.cellNumber !== null) {
         updateSessionCellWinner(
-          currentEditingSessionId || state.currentSessionId,
-          currentEditingCellNumber,
+          modalContext.sessionId || state.currentSessionId,
+          modalContext.cellNumber,
+          playerName
+        );
+      } else if (modalContext.gameType === 'ultimate') {
+        updateUltimateWinnerName(
+          modalContext.sessionId || state.ultimateGame.currentSessionId,
           playerName
         );
       }
 
       document.getElementById('winnerModalBackdrop').classList.remove('active');
-      currentEditingSessionId = null;
-      currentEditingCellNumber = null;
 
-      // 若本局已經全部抽完，貼心提醒可開啟下一局
-      const unopenedCount = state.cells.filter(c => !c.opened).length;
-      if (unopenedCount === 0) {
-        setTimeout(() => {
-          if (confirm('🎊 恭喜！第 ' + state.roundNumber + ' 局的所有格子已全部抽完！\n本局完整紀錄已保存在「各局遊玩紀錄」分頁中。\n\n是否要立即洗牌開啟下一局？')) {
-            startNewRoundSession(state.config, false);
-          }
-        }, 250);
+      if (modalContext.gameType === 'draw') {
+        const unopenedCount = state.cells.filter(c => !c.opened).length;
+        if (unopenedCount === 0) {
+          setTimeout(() => {
+            if (confirm('🎊 恭喜！第 ' + state.roundNumber + ' 局的所有格子已全部抽完！\n本局完整紀錄已保存在「各局遊玩紀錄」分頁中。\n\n是否要立即洗牌開啟下一局？')) {
+              startNewRoundSession(state.config, false);
+            }
+          }, 250);
+        }
       }
     }
 
@@ -2409,37 +3303,70 @@
 
     function exportRecordsToCsv() {
       syncCurrentCellsIntoSession();
-      if (!state.gameSessions || state.gameSessions.length === 0) {
-        alert('目前尚無任何局數紀錄可匯出！');
-        return;
-      }
+      syncCurrentUltimateIntoSession();
 
-      const headers = ['局數', '開局時間', '格號', '狀態', '類型', '獎勵內容', '得主姓名', '開出時間'];
-      const rows = [];
+      if (activeRecordsType === 'draw') {
+        if (!state.gameSessions || state.gameSessions.length === 0) {
+          alert('目前尚無任何戳戳樂局數紀錄可匯出！');
+          return;
+        }
 
-      state.gameSessions.forEach((sess) => {
-        (sess.cells || []).forEach((c) => {
-          rows.push([
+        const headers = ['局數', '開局時間', '格號', '狀態', '類型', '獎勵內容', '得主姓名', '開出時間'];
+        const rows = [];
+
+        state.gameSessions.forEach((sess) => {
+          (sess.cells || []).forEach((c) => {
+            rows.push([
+              `"第 ${sess.roundNumber} 局"`,
+              `"${(sess.startedAt || '').replace(/"/g, '""')}"`,
+              `"#${c.number}"`,
+              `"${c.opened ? '已開出' : '未開啟'}"`,
+              `"${c.opened ? (c.isGrand ? '大獎' : '一般') : '保密'}"`,
+              `"${c.opened ? (c.prizeName || '').replace(/"/g, '""') : '尚未開獎（內容保密）'}"`,
+              `"${c.opened ? (c.winnerName || '').replace(/"/g, '""') : '-'}"`,
+              `"${(c.openedAt || '-').replace(/"/g, '""')}"`
+            ]);
+          });
+        });
+
+        const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `幸運戳戳樂各局紀錄_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        if (!state.ultimateSessions || state.ultimateSessions.length === 0) {
+          alert('目前尚無任何終極密碼局數紀錄可匯出！');
+          return;
+        }
+
+        const headers = ['局數', '開局時間', '初始區間', '狀態', '終極密碼', '獎勵內容', '贏家姓名', '總猜測次數'];
+        const rows = state.ultimateSessions.map((sess) => {
+          const isCompleted = sess.status === 'completed';
+          return [
             `"第 ${sess.roundNumber} 局"`,
             `"${(sess.startedAt || '').replace(/"/g, '""')}"`,
-            `"#${c.number}"`,
-            `"${c.opened ? '已開出' : '未開啟'}"`,
-            `"${c.opened ? (c.isGrand ? '大獎' : '一般') : '保密'}"`,
-            `"${c.opened ? (c.prizeName || '').replace(/"/g, '""') : '尚未開獎（內容保密）'}"`,
-            `"${c.opened ? (c.winnerName || '').replace(/"/g, '""') : '-'}"`,
-            `"${(c.openedAt || '-').replace(/"/g, '""')}"`
-          ]);
+            `"${sess.min} ~ ${sess.max}"`,
+            `"${isCompleted ? '已完成' : '進行中'}"`,
+            `"${isCompleted ? sess.secretCode : '保密中'}"`,
+            `"${(sess.prizeName || '').replace(/"/g, '""')}"`,
+            `"${isCompleted ? (sess.winnerName || '').replace(/"/g, '""') : '-'}"`,
+            `"${(sess.guesses || []).length} 次"`
+          ];
         });
-      });
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `抽獎各局完整紀錄_${new Date().toISOString().slice(0, 10)}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
+        const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `終極密碼各局紀錄_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
     }
 
     function updateSoundButton() {
@@ -2447,33 +3374,103 @@
       btn.textContent = state.soundEnabled ? '🔊 音效：開' : '🔇 音效：關';
     }
 
-    function escapeHtml(str) {
-      return String(str || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
     // ==========================================
     // 事件綁定
     // ==========================================
-    document.getElementById('tabBtnGame').addEventListener('click', () => {
-      document.getElementById('tabBtnGame').classList.add('active');
-      document.getElementById('tabBtnRecords').classList.remove('active');
-      document.getElementById('viewGame').classList.add('active');
-      document.getElementById('viewRecords').classList.remove('active');
-    });
+    function switchMainTab(tabName) {
+      document.getElementById('tabBtnGame').classList.toggle('active', tabName === 'game');
+      document.getElementById('tabBtnUltimate').classList.toggle('active', tabName === 'ultimate');
+      document.getElementById('tabBtnRecords').classList.toggle('active', tabName === 'records');
 
-    document.getElementById('tabBtnRecords').addEventListener('click', () => {
-      document.getElementById('tabBtnRecords').classList.add('active');
-      document.getElementById('tabBtnGame').classList.remove('active');
-      document.getElementById('viewRecords').classList.add('active');
-      document.getElementById('viewGame').classList.remove('active');
+      document.getElementById('viewGame').classList.toggle('active', tabName === 'game');
+      document.getElementById('viewUltimate').classList.toggle('active', tabName === 'ultimate');
+      document.getElementById('viewRecords').classList.toggle('active', tabName === 'records');
+
+      if (tabName === 'game') {
+        document.body.classList.remove('mode-other');
+      } else {
+        document.body.classList.add('mode-other');
+      }
+
+      if (tabName === 'records') {
+        renderSessionsView();
+      }
+    }
+
+    document.getElementById('tabBtnGame').addEventListener('click', () => switchMainTab('game'));
+    document.getElementById('tabBtnUltimate').addEventListener('click', () => switchMainTab('ultimate'));
+    document.getElementById('tabBtnRecords').addEventListener('click', () => switchMainTab('records'));
+
+    // 紀錄分頁內的子分頁切換
+    document.getElementById('recSubTabDraw').addEventListener('click', () => {
+      activeRecordsType = 'draw';
+      renderSessionsView();
+    });
+    document.getElementById('recSubTabUltimate').addEventListener('click', () => {
+      activeRecordsType = 'ultimate';
       renderSessionsView();
     });
 
+    // 終極密碼模式切換（隨機密碼 vs 自行輸入密碼）
+    let selectedUcMode = 'random';
+    document.getElementById('ucModeRandomBtn').addEventListener('click', () => {
+      selectedUcMode = 'random';
+      document.getElementById('ucModeRandomBtn').classList.add('active');
+      document.getElementById('ucModeCustomBtn').classList.remove('active');
+      document.getElementById('ucCustomSecretBox').style.display = 'none';
+    });
+
+    document.getElementById('ucModeCustomBtn').addEventListener('click', () => {
+      selectedUcMode = 'custom';
+      document.getElementById('ucModeCustomBtn').classList.add('active');
+      document.getElementById('ucModeRandomBtn').classList.remove('active');
+      document.getElementById('ucCustomSecretBox').style.display = 'flex';
+      document.getElementById('ucInputCustomSecret').focus();
+    });
+
+    // 終極密碼開新局按鈕
+    document.getElementById('ucStartNewRoundBtn').addEventListener('click', () => {
+      const minVal = parseInt(document.getElementById('ucInputMin').value, 10);
+      const maxVal = parseInt(document.getElementById('ucInputMax').value, 10);
+      const prizeName = document.getElementById('ucInputPrize').value.trim() || '神秘大獎';
+
+      if (isNaN(minVal) || isNaN(maxVal) || minVal >= maxVal || maxVal - minVal < 2) {
+        alert('請設定有效的區間範圍（最大數字必須比最小數字至少大 2 以上）！');
+        return;
+      }
+
+      let customSecret;
+      if (selectedUcMode === 'custom') {
+        customSecret = parseInt(document.getElementById('ucInputCustomSecret').value, 10);
+        if (isNaN(customSecret) || customSecret <= minVal || customSecret >= maxVal) {
+          alert(`請輸入介於 ${minVal + 1} ～ ${maxVal - 1} 之間的自訂整數密碼！`);
+          return;
+        }
+      }
+
+      if (state.ultimateGame.status === 'playing' && (state.ultimateGame.guesses || []).length > 0) {
+        if (!confirm('目前這一局終極密碼還在進行中，確定要直接開啟新一局嗎？')) {
+          return;
+        }
+      }
+
+      document.getElementById('ucInputCustomSecret').value = '';
+      startNewUltimateSession({
+        min: minVal,
+        max: maxVal,
+        prizeName,
+        mode: selectedUcMode,
+        customSecret
+      }, false);
+    });
+
+    // 終極密碼猜數字送出
+    document.getElementById('ucSubmitGuessBtn').addEventListener('click', handleUltimateGuess);
+    document.getElementById('ucGuessInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleUltimateGuess();
+    });
+
+    // 中獎彈窗確認
     document.getElementById('confirmWinnerBtn').addEventListener('click', saveWinnerAndCloseModal);
     document.getElementById('winnerPlayerInput').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') saveWinnerAndCloseModal();
@@ -2482,6 +3479,7 @@
       if (e.target.id === 'winnerModalBackdrop') saveWinnerAndCloseModal();
     });
 
+    // 設定彈窗
     document.getElementById('openSettingsBtn').addEventListener('click', openSettingsModal);
     document.getElementById('cloudSyncPill').addEventListener('click', openSettingsModal);
     document.getElementById('closeSettingsCrossBtn').addEventListener('click', () => {
@@ -2507,7 +3505,7 @@
     document.getElementById('inputTotalCells').addEventListener('input', updateAllocationSummary);
     document.getElementById('saveSettingsBtn').addEventListener('click', saveSettingsAndStart);
 
-    // 開啟下一局（將本局整局封存保留，並產生新一局的紀錄）
+    // 戳戳樂開啟下一局
     document.getElementById('resetBoardBtn').addEventListener('click', () => {
       const openedCount = state.cells.filter(c => c.opened).length;
       const msg = openedCount > 0
@@ -2545,16 +3543,33 @@
     document.getElementById('recordSearchInput').addEventListener('input', renderSessionsView);
     document.getElementById('exportCsvBtn').addEventListener('click', exportRecordsToCsv);
     document.getElementById('clearAllRecordsBtn').addEventListener('click', () => {
-      if (state.gameSessions.length <= 1 && state.cells.every(c => !c.opened)) {
-        alert('目前沒有已封存的歷史局數可清空！');
-        return;
-      }
-      if (confirm('⚠️ 確定要刪除所有歷史局數紀錄，並重置回「第 1 局」嗎？\n此操作會同步刪除雲端上的歷史局數且無法復原！')) {
-        state.gameSessions = [];
-        state.roundNumber = 1;
-        state.currentSessionId = '';
-        expandedSessionIds.clear();
-        startNewRoundSession(state.config, true);
+      if (activeRecordsType === 'draw') {
+        if (state.gameSessions.length <= 1 && state.cells.every(c => !c.opened)) {
+          alert('目前沒有已封存的戳戳樂歷史局數可清空！');
+          return;
+        }
+        if (confirm('⚠️ 確定要刪除所有「幸運戳戳樂」歷史局數紀錄，並重置回第 1 局嗎？')) {
+          state.gameSessions = [];
+          state.roundNumber = 1;
+          state.currentSessionId = '';
+          expandedSessionIds.clear();
+          startNewRoundSession(state.config, true);
+        }
+      } else {
+        if (state.ultimateSessions.length <= 1 && (state.ultimateGame.guesses || []).length === 0) {
+          alert('目前沒有已封存的終極密碼歷史局數可清空！');
+          return;
+        }
+        if (confirm('⚠️ 確定要刪除所有「終極密碼」歷史局數紀錄，並重置回第 1 局嗎？')) {
+          state.ultimateSessions = [];
+          expandedSessionIds.clear();
+          startNewUltimateSession({
+            min: state.ultimateGame.min,
+            max: state.ultimateGame.max,
+            prizeName: state.ultimateGame.prizeName,
+            mode: 'random'
+          }, true);
+        }
       }
     });
 
