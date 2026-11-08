@@ -672,7 +672,9 @@
       text-decoration: underline;
     }
 
-    /* Play Records Tab View (遊玩紀錄分頁) */
+    /* ============================================
+       Play Records Tab View (以「整局」為單位的紀錄分頁)
+       ============================================ */
     .records-header-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -693,25 +695,125 @@
       flex-wrap: wrap;
     }
 
-    .records-table-wrap {
+    .sessions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .session-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 18px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .session-card.current-session {
+      border: 2px solid rgba(255, 209, 102, 0.65);
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.3);
+    }
+
+    .session-card-header {
+      padding: 16px 20px;
+      background: rgba(0, 0, 0, 0.28);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .session-card-header:hover {
+      background: rgba(0, 0, 0, 0.38);
+    }
+
+    .session-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .session-round-badge {
+      background: linear-gradient(135deg, #ffd166, #f4a261);
+      color: #1a103c;
+      font-weight: 900;
+      font-size: 0.92rem;
+      padding: 4px 14px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .session-status-badge {
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .session-status-badge.active {
+      background: rgba(6, 214, 160, 0.18);
+      color: #06d6a0;
+      border: 1px solid rgba(6, 214, 160, 0.4);
+    }
+
+    .session-status-badge.completed {
+      background: rgba(255, 209, 102, 0.18);
+      color: var(--accent-gold);
+      border: 1px solid rgba(255, 209, 102, 0.4);
+    }
+
+    .session-meta-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .session-card-body {
+      padding: 18px 20px;
+      border-top: 1px solid var(--card-border);
+      display: none;
+    }
+
+    .session-card.expanded .session-card-body {
+      display: block;
+    }
+
+    .session-filter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .records-table-wrap {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
       overflow-x: auto;
     }
 
     table.records-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 680px;
+      min-width: 620px;
     }
 
     table.records-table th,
     table.records-table td {
-      padding: 13px 16px;
+      padding: 11px 14px;
       text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 0.92rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      font-size: 0.9rem;
     }
 
     table.records-table th {
@@ -729,7 +831,7 @@
       display: inline-block;
       padding: 3px 10px;
       border-radius: 99px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 800;
       white-space: nowrap;
     }
@@ -752,7 +854,7 @@
       padding: 6px 10px;
       color: #fff;
       font-size: 0.88rem;
-      width: 145px;
+      width: 160px;
       outline: none;
     }
 
@@ -1051,12 +1153,12 @@
         <h1>幸運戳戳樂抽獎</h1>
       </div>
 
-      <!-- 分頁切換：抽獎主畫面 vs 遊玩紀錄 -->
+      <!-- 分頁切換：抽獎主畫面 vs 遊玩紀錄（以整局為單位） -->
       <div class="nav-tabs">
         <button class="nav-tab active" id="tabBtnGame">🎯 抽獎面板</button>
         <button class="nav-tab" id="tabBtnRecords">
-          📜 遊玩紀錄
-          <span class="tab-badge" id="recordsCountBadge">0</span>
+          📜 各局遊玩紀錄
+          <span class="tab-badge" id="recordsCountBadge">1 局</span>
         </button>
       </div>
     </div>
@@ -1077,7 +1179,7 @@
       <button class="btn btn-gold" id="randomPickBtn" title="輪盤跳號隨機抽出一個未開的號碼">🎰 隨機輪盤抽號</button>
       <button class="btn" id="soundToggleBtn">🔊 音效：開</button>
       <button class="btn" id="openSettingsBtn">⚙️ 獎項與格子設定</button>
-      <button class="btn btn-pink" id="resetBoardBtn">🔄 重新洗牌開局</button>
+      <button class="btn btn-pink" id="resetBoardBtn">🔄 開啟下一局</button>
     </div>
   </header>
 
@@ -1088,12 +1190,13 @@
       <div class="board-section">
         <div class="stats-bar">
           <div class="stat-group">
+            <div class="stat-item nowrap">目前局數：<strong id="statRound">第 1 局</strong></div>
             <div class="stat-item nowrap">總格數：<strong id="statTotal">0</strong></div>
             <div class="stat-item nowrap">剩餘未開：<strong id="statRemaining">0</strong></div>
             <div class="stat-item nowrap">剩餘大獎：<strong id="statGrandRemaining">0</strong></div>
           </div>
           <div style="font-size: 0.86rem; color: var(--text-muted);">
-            💡 點擊號碼格開獎，或點擊已開啟的格子修改中獎人姓名
+            💡 點擊號碼格開獎，或點擊已開啟的格子填寫/修改得主姓名
           </div>
         </div>
 
@@ -1104,14 +1207,14 @@
       <aside class="sidebar">
         <div class="panel-card">
           <div class="panel-title">
-            <span>🏆 大獎剩餘數量</span>
+            <span>🏆 本局大獎剩餘數量</span>
           </div>
           <div class="prize-status-list" id="prizeStatusList"></div>
         </div>
 
         <div class="panel-card">
           <div class="panel-title">
-            <span>👑 本局開獎與得主名單</span>
+            <span>👑 本局已開獎名單</span>
             <span style="font-size: 0.76rem; color: var(--text-muted); font-weight: 600;">點擊可改名字</span>
           </div>
           <div class="round-winners-list" id="roundWinnersList"></div>
@@ -1120,38 +1223,24 @@
     </div>
   </section>
 
-  <!-- 分頁 2：永久遊玩紀錄分頁 -->
+  <!-- 分頁 2：以「一整局」為單位的遊玩紀錄分頁 -->
   <section class="view-section" id="viewRecords">
     <div class="records-header-card">
       <div>
-        <h2 style="font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 4px;">📜 歷史遊玩與得主紀錄</h2>
+        <h2 style="font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 4px;">📜 歷局完整遊玩紀錄（以局為單位）</h2>
         <p style="font-size: 0.86rem; color: var(--text-muted);">
-          所有開獎結果與得主姓名皆會自動永久保存並同步至雲端，重新洗牌開新局也不會消失，直到您手動刪除。
+          每一局的整盤抽獎進度與得主名單皆獨立保存為一筆局數紀錄；當本局抽完或點擊「開啟下一局」時，會自動建立新一局的紀錄，舊局完整保留直到手動刪除。
         </p>
       </div>
 
       <div class="records-filter-bar">
         <input type="text" id="recordSearchInput" class="form-control" placeholder="🔍 搜尋玩家姓名或獎項..." style="width: 210px; padding: 8px 12px;">
-        <button class="btn" id="exportCsvBtn">📥 匯出 CSV</button>
-        <button class="btn btn-pink" id="clearAllRecordsBtn">🗑️ 清空全部紀錄</button>
+        <button class="btn" id="exportCsvBtn">📥 匯出全部局數 CSV</button>
+        <button class="btn btn-pink" id="clearAllRecordsBtn">🗑️ 清空歷史局數紀錄</button>
       </div>
     </div>
 
-    <div class="records-table-wrap">
-      <table class="records-table">
-        <thead>
-          <tr>
-            <th>開獎時間</th>
-            <th>局數 / 格號</th>
-            <th>類型</th>
-            <th>獲得獎勵內容</th>
-            <th>中獎玩家姓名（可直接修改）</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="recordsTableBody"></tbody>
-      </table>
-    </div>
+    <div class="sessions-container" id="sessionsContainer"></div>
   </section>
 
   <!-- 中獎彈出視窗（含輸入玩家姓名） -->
@@ -1170,7 +1259,7 @@
       </div>
 
       <button class="btn btn-gold" id="confirmWinnerBtn" style="width: 100%; padding: 12px 24px; font-size: 1.02rem;">
-        ✅ 確認並儲存紀錄
+        ✅ 確認並儲存至本局紀錄
       </button>
     </div>
   </div>
@@ -1218,13 +1307,13 @@
 
       <div class="settings-footer">
         <button class="btn" id="cancelSettingsBtn">取消</button>
-        <button class="btn btn-gold" id="saveSettingsBtn">💾 儲存設定並重新洗牌開局</button>
+        <button class="btn btn-gold" id="saveSettingsBtn">💾 儲存設定並開啟新一局</button>
       </div>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'LUCKY_DRAW_STATE_V2';
+    const STORAGE_KEY = 'LUCKY_DRAW_STATE_V3';
     const DEFAULT_CLOUD_ROOM = 'nono86433_lucky_draw_v1';
 
     const defaultConfig = {
@@ -1238,19 +1327,37 @@
       ]
     };
 
+    /**
+     * 資料結構設計：
+     * - gameSessions: 儲存每一整局的完整紀錄陣列（最新局排最前面）
+     *   每個 session 物件包含：
+     *   {
+     *     sessionId: 'sess_...',
+     *     roundNumber: 1,
+     *     startedAt: '2026/11/08 23:20:00',
+     *     completedAt: '' | '2026/11/08 23:35:00',
+     *     totalCells: 25,
+     *     cells: [ { number, prizeName, isGrand, prizeId, opened, winnerName, openedAt } ]
+     *   }
+     */
     let state = {
-      version: 1,
+      version: 3,
       updatedAt: 0,
       roundNumber: 1,
+      currentSessionId: '',
       cloudRoom: DEFAULT_CLOUD_ROOM,
       config: JSON.parse(JSON.stringify(defaultConfig)),
-      cells: [],          // { number, prizeName, isGrand, prizeId, opened, winnerName, openedAt, recordId }
-      playRecords: [],    // 永久保存的遊玩紀錄 [{ id, round, number, prizeName, isGrand, winnerName, time }]
+      cells: [],
+      gameSessions: [],
       soundEnabled: true
     };
 
+    // 記錄哪些局數卡片在「遊玩紀錄」分頁中處於展開狀態
+    const expandedSessionIds = new Set();
+    let showOnlyOpenedInSession = {}; // { [sessionId]: boolean }
+
+    let currentEditingSessionId = null;
     let currentEditingCellNumber = null;
-    let currentEditingRecordId = null;
     let isAnimating = false;
     let cloudSocket = null;
 
@@ -1276,7 +1383,6 @@
       const now = audioCtx.currentTime;
 
       if (type === 'tick') {
-        // 輪盤跳動短促音效
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -1332,7 +1438,6 @@
 
     // ==========================================
     // 雲端同步機制 (ntfy.sh JSON 狀態儲存 + 即時監聽)
-    // 讓不同電腦、不同網路開啟網頁時皆能取得一致的資料
     // ==========================================
     function setSyncBadge(status, text) {
       const pill = document.getElementById('cloudSyncPill');
@@ -1343,22 +1448,35 @@
 
     function getCloudTopic() {
       const clean = (state.cloudRoom || DEFAULT_CLOUD_ROOM).replace(/[^a-zA-Z0-9_-]/g, '_');
-      return `lucky_draw_sync_${clean}`;
+      return `lucky_draw_sync_v3_${clean}`;
+    }
+
+    function syncCurrentCellsIntoSession() {
+      const idx = state.gameSessions.findIndex(s => s.sessionId === state.currentSessionId);
+      if (idx !== -1) {
+        state.gameSessions[idx].cells = JSON.parse(JSON.stringify(state.cells));
+        const allOpened = state.cells.length > 0 && state.cells.every(c => c.opened);
+        if (allOpened && !state.gameSessions[idx].completedAt) {
+          state.gameSessions[idx].completedAt = formatDateTime(new Date());
+        }
+      }
     }
 
     async function pushStateToCloud() {
+      syncCurrentCellsIntoSession();
       state.updatedAt = Date.now();
       saveLocalState();
       const topic = getCloudTopic();
       setSyncBadge('syncing', '雲端同步中...');
       try {
         const payload = {
-          type: 'FULL_STATE',
+          type: 'FULL_STATE_V3',
           updatedAt: state.updatedAt,
           roundNumber: state.roundNumber,
+          currentSessionId: state.currentSessionId,
           config: state.config,
           cells: state.cells,
-          playRecords: state.playRecords
+          gameSessions: state.gameSessions
         };
         await fetch(`https://ntfy.sh/${topic}`, {
           method: 'POST',
@@ -1387,7 +1505,7 @@
             const msg = JSON.parse(line);
             if (msg.event === 'message' && msg.message) {
               const parsed = JSON.parse(msg.message);
-              if (parsed && parsed.type === 'FULL_STATE' && Array.isArray(parsed.cells)) {
+              if (parsed && parsed.type === 'FULL_STATE_V3' && Array.isArray(parsed.cells)) {
                 if (!latestCloudState || (parsed.updatedAt || 0) >= (latestCloudState.updatedAt || 0)) {
                   latestCloudState = parsed;
                 }
@@ -1402,7 +1520,6 @@
           }
           setSyncBadge('ok', '雲端已同步');
         } else {
-          // 雲端尚無此房間紀錄，將本機初始狀態推上雲端
           await pushStateToCloud();
         }
       } catch (err) {
@@ -1414,9 +1531,13 @@
     function applyRemoteState(remote) {
       state.updatedAt = remote.updatedAt || Date.now();
       state.roundNumber = remote.roundNumber || 1;
+      state.currentSessionId = remote.currentSessionId || '';
       if (remote.config) state.config = remote.config;
       if (Array.isArray(remote.cells)) state.cells = remote.cells;
-      if (Array.isArray(remote.playRecords)) state.playRecords = remote.playRecords;
+      if (Array.isArray(remote.gameSessions)) state.gameSessions = remote.gameSessions;
+      if (state.currentSessionId) {
+        expandedSessionIds.add(state.currentSessionId);
+      }
       saveLocalState();
       renderAll();
     }
@@ -1436,7 +1557,7 @@
             const raw = JSON.parse(event.data);
             if (raw.event === 'message' && raw.message) {
               const data = JSON.parse(raw.message);
-              if (data && data.type === 'FULL_STATE' && (data.updatedAt || 0) > (state.updatedAt || 0)) {
+              if (data && data.type === 'FULL_STATE_V3' && (data.updatedAt || 0) > (state.updatedAt || 0)) {
                 applyRemoteState(data);
               }
             }
@@ -1449,8 +1570,18 @@
     }
 
     // ==========================================
-    // 遊戲核心邏輯
+    // 遊戲核心邏輯（以「整局」為單位建立與保存紀錄）
     // ==========================================
+    function formatDateTime(d) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    function formatShortTime(d) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
     function shuffleArray(arr) {
       const copy = [...arr];
       for (let i = copy.length - 1; i > 0; i--) {
@@ -1460,11 +1591,12 @@
       return copy;
     }
 
-    function initNewGame(config, isResetRound = false) {
+    function startNewRoundSession(config, isFirstInit = false) {
+      // 如果上一局完全還沒開過任何一格，直接覆蓋更新當前這一局即可，避免產生空白廢局
+      const currentSession = state.gameSessions.find(s => s.sessionId === state.currentSessionId);
+      const currentOpenedCount = state.cells.filter(c => c.opened).length;
+
       state.config = JSON.parse(JSON.stringify(config));
-      if (isResetRound) {
-        state.roundNumber = (state.roundNumber || 1) + 1;
-      }
 
       const pool = [];
       state.config.prizes.forEach((p) => {
@@ -1492,16 +1624,48 @@
       const trimmedPool = pool.slice(0, total);
       const shuffled = shuffleArray(trimmedPool);
 
-      state.cells = shuffled.map((item, idx) => ({
+      const newCells = shuffled.map((item, idx) => ({
         number: idx + 1,
         prizeName: item.prizeName,
         isGrand: item.isGrand,
         prizeId: item.prizeId,
         opened: false,
         winnerName: '',
-        openedAt: '',
-        recordId: null
+        openedAt: ''
       }));
+
+      state.cells = newCells;
+
+      if (!isFirstInit && currentSession && currentOpenedCount === 0) {
+        // 當前局一格都還沒抽過，直接重新洗牌當前局
+        currentSession.startedAt = formatDateTime(new Date());
+        currentSession.totalCells = total;
+        currentSession.cells = JSON.parse(JSON.stringify(newCells));
+      } else {
+        // 如果上一局有抽過，先將上一局封存，並建立新的一局紀錄
+        if (currentSession && !currentSession.completedAt) {
+          currentSession.completedAt = formatDateTime(new Date());
+        }
+
+        const maxRound = state.gameSessions.reduce((max, s) => Math.max(max, s.roundNumber || 0), 0);
+        const nextRound = isFirstInit && state.gameSessions.length === 0 ? 1 : maxRound + 1;
+        const newSessionId = `sess_${Date.now()}_r${nextRound}`;
+
+        state.roundNumber = nextRound;
+        state.currentSessionId = newSessionId;
+
+        const newSessionObj = {
+          sessionId: newSessionId,
+          roundNumber: nextRound,
+          startedAt: formatDateTime(new Date()),
+          completedAt: '',
+          totalCells: total,
+          cells: JSON.parse(JSON.stringify(newCells))
+        };
+
+        state.gameSessions.unshift(newSessionObj);
+        expandedSessionIds.add(newSessionId);
+      }
 
       renderAll();
       pushStateToCloud();
@@ -1521,21 +1685,22 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && parsed.config && Array.isArray(parsed.cells) && parsed.cells.length > 0) {
+          if (parsed && parsed.config && Array.isArray(parsed.cells) && parsed.cells.length > 0 && Array.isArray(parsed.gameSessions)) {
             state = {
               ...state,
-              ...parsed,
-              playRecords: Array.isArray(parsed.playRecords) ? parsed.playRecords : []
+              ...parsed
             };
+            if (state.currentSessionId) {
+              expandedSessionIds.add(state.currentSessionId);
+            }
             hasLocal = true;
           }
         }
       } catch (e) {}
 
       if (!hasLocal) {
-        // 先建立預設盤面，再向雲端拉取是否有現存進度
         state.updatedAt = 0;
-        initNewGame(defaultConfig, false);
+        startNewRoundSession(defaultConfig, true);
         state.updatedAt = 0;
       } else {
         renderAll();
@@ -1553,10 +1718,10 @@
       renderBoard();
       renderPrizeStatus();
       renderRoundWinners();
-      renderPlayRecordsTable();
+      renderSessionsView();
       updateSoundButton();
       document.getElementById('callNumberInput').max = state.cells.length;
-      document.getElementById('recordsCountBadge').textContent = state.playRecords.length;
+      document.getElementById('recordsCountBadge').textContent = `${state.gameSessions.length} 局`;
     }
 
     function renderStats() {
@@ -1564,6 +1729,7 @@
       const remaining = state.cells.filter(c => !c.opened).length;
       const grandRemaining = state.cells.filter(c => !c.opened && c.isGrand).length;
 
+      document.getElementById('statRound').textContent = `第 ${state.roundNumber || 1} 局`;
       document.getElementById('statTotal').textContent = total;
       document.getElementById('statRemaining').textContent = remaining;
       document.getElementById('statGrandRemaining').textContent = grandRemaining;
@@ -1632,7 +1798,7 @@
 
     function renderRoundWinners() {
       const listEl = document.getElementById('roundWinnersList');
-      const openedCells = state.cells.filter(c => c.opened).slice().reverse();
+      const openedCells = state.cells.filter(c => c.opened);
 
       if (openedCells.length === 0) {
         listEl.innerHTML = `
@@ -1657,95 +1823,213 @@
             <span class="winner-num-pill">#${cell.number}</span>
             <div class="winner-info-col">
               <div class="winner-prize-label" title="${escapeHtml(cell.prizeName)}">${escapeHtml(cell.prizeName)}</div>
-              <span class="winner-player-tag" data-num="${cell.number}">${playerLabel}</span>
+              <span class="winner-player-tag">${playerLabel}</span>
             </div>
           </div>
           <span class="nowrap" style="font-size: 0.75rem; color: var(--text-muted);">${cell.openedAt || ''}</span>
         `;
 
         row.querySelector('.winner-player-tag').addEventListener('click', () => {
-          showWinnerModal(cell);
+          showWinnerModal(cell, state.currentSessionId);
         });
 
         listEl.appendChild(row);
       });
     }
 
-    // 渲染「遊玩紀錄」分頁表格
-    function renderPlayRecordsTable() {
-      const tbody = document.getElementById('recordsTableBody');
+    // 渲染「各局遊玩紀錄」分頁（每一整局一張可展開卡片）
+    function renderSessionsView() {
+      syncCurrentCellsIntoSession();
+      const container = document.getElementById('sessionsContainer');
       const keyword = (document.getElementById('recordSearchInput')?.value || '').trim().toLowerCase();
 
-      const filtered = state.playRecords.filter((rec) => {
-        if (!keyword) return true;
-        return (
-          (rec.prizeName || '').toLowerCase().includes(keyword) ||
-          (rec.winnerName || '').toLowerCase().includes(keyword) ||
-          String(rec.number).includes(keyword)
-        );
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 28px;">
-              目前尚無符合的遊玩紀錄
-            </td>
-          </tr>
+      if (!state.gameSessions || state.gameSessions.length === 0) {
+        container.innerHTML = `
+          <div class="panel-card" style="text-align: center; color: var(--text-muted); padding: 36px;">
+            目前尚無任何局數紀錄
+          </div>
         `;
         return;
       }
 
-      tbody.innerHTML = '';
-      filtered.forEach((rec) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="nowrap">${escapeHtml(rec.time || '')}</td>
-          <td class="nowrap">第 ${rec.round || 1} 局 / <strong>#${rec.number}</strong></td>
-          <td class="nowrap">
-            <span class="record-type-badge ${rec.isGrand ? 'grand' : 'normal'}">
-              ${rec.isGrand ? '🏆 大獎' : '🎈 一般'}
-            </span>
-          </td>
-          <td style="font-weight: 700; color: ${rec.isGrand ? 'var(--accent-gold)' : '#fff'};">
-            ${escapeHtml(rec.prizeName)}
-          </td>
-          <td>
-            <input type="text" class="inline-player-input" value="${escapeHtml(rec.winnerName || '')}" placeholder="輸入玩家姓名..." data-record-id="${rec.id}">
-          </td>
-          <td class="nowrap">
-            <button type="button" class="btn-icon delete-record-btn" title="刪除此筆紀錄" data-record-id="${rec.id}">🗑️</button>
-          </td>
+      container.innerHTML = '';
+
+      state.gameSessions.forEach((sess) => {
+        const isCurrent = sess.sessionId === state.currentSessionId;
+        const cells = Array.isArray(sess.cells) ? sess.cells : [];
+        const openedCount = cells.filter(c => c.opened).length;
+        const grandOpenedCount = cells.filter(c => c.opened && c.isGrand).length;
+        const grandTotalCount = cells.filter(c => c.isGrand).length;
+        const isAllOpened = cells.length > 0 && openedCount === cells.length;
+
+        // 若有搜尋關鍵字，過濾該局內的格子
+        const matchingCells = cells.filter((c) => {
+          if (!keyword) return true;
+          return (
+            (c.prizeName || '').toLowerCase().includes(keyword) ||
+            (c.winnerName || '').toLowerCase().includes(keyword) ||
+            String(c.number).includes(keyword)
+          );
+        });
+
+        if (keyword && matchingCells.length === 0) {
+          return;
+        }
+
+        const isExpanded = expandedSessionIds.has(sess.sessionId) || Boolean(keyword);
+        const onlyOpened = showOnlyOpenedInSession[sess.sessionId] !== false; // 預設只顯示已開出的格子，可切換顯示全部格子
+        const displayCells = onlyOpened ? matchingCells.filter(c => c.opened) : matchingCells;
+
+        const card = document.createElement('div');
+        card.className = `session-card ${isCurrent ? 'current-session' : ''} ${isExpanded ? 'expanded' : ''}`;
+
+        const statusBadgeHtml = isCurrent && !isAllOpened
+          ? `<span class="session-status-badge active">🟢 目前進行中</span>`
+          : `<span class="session-status-badge completed">✅ 已完成 / 已封存</span>`;
+
+        card.innerHTML = `
+          <div class="session-card-header">
+            <div class="session-title-group">
+              <span class="session-round-badge">第 ${sess.roundNumber} 局</span>
+              ${statusBadgeHtml}
+              <span class="nowrap" style="font-weight: 800; color: #fff;">
+                已抽 ${openedCount} / ${cells.length} 格（大獎已出 ${grandOpenedCount} / ${grandTotalCount}）
+              </span>
+            </div>
+            <div class="session-meta-group">
+              <span class="nowrap">🕒 開局時間：${escapeHtml(sess.startedAt || '')}</span>
+              ${!isCurrent ? `<button type="button" class="btn-icon delete-session-btn" title="刪除第 ${sess.roundNumber} 局整局紀錄">🗑️</button>` : ''}
+              <span class="nowrap" style="color: var(--accent-gold); font-weight: 800;">
+                ${isExpanded ? '▲ 收合明細' : '▼ 展開整局明細'}
+              </span>
+            </div>
+          </div>
+
+          <div class="session-card-body">
+            <div class="session-filter-row">
+              <div style="font-size: 0.88rem; color: var(--text-muted);">
+                📋 <strong>第 ${sess.roundNumber} 局完整結果清單</strong>（可直接修改該局得主姓名）
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn toggle-unopened-btn" style="padding: 5px 12px; font-size: 0.82rem;">
+                  ${onlyOpened ? `👁️ 顯示全部 ${cells.length} 格（含未開）` : `👁️ 僅顯示已開出 (${openedCount} 格)`}
+                </button>
+              </div>
+            </div>
+
+            <div class="records-table-wrap">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>格號</th>
+                    <th>狀態</th>
+                    <th>類型</th>
+                    <th>獎勵內容</th>
+                    <th>得主姓名（可直接輸入紀錄）</th>
+                    <th>開出時間</th>
+                  </tr>
+                </thead>
+                <tbody class="session-tbody"></tbody>
+              </table>
+            </div>
+          </div>
         `;
 
-        // 即時修改得主姓名
-        const inputEl = tr.querySelector('.inline-player-input');
-        inputEl.addEventListener('change', () => {
-          updateWinnerNameByRecordId(rec.id, inputEl.value.trim());
-        });
-
-        // 刪除單筆紀錄
-        tr.querySelector('.delete-record-btn').addEventListener('click', () => {
-          if (confirm(`確定要刪除「#${rec.number} ${rec.prizeName}」這筆遊玩紀錄嗎？`)) {
-            state.playRecords = state.playRecords.filter(r => r.id !== rec.id);
-            renderAll();
-            pushStateToCloud();
+        // 點擊標題列展開/收合整局明細
+        const headerEl = card.querySelector('.session-card-header');
+        headerEl.addEventListener('click', (e) => {
+          if (e.target.closest('.delete-session-btn')) return;
+          if (expandedSessionIds.has(sess.sessionId)) {
+            expandedSessionIds.delete(sess.sessionId);
+          } else {
+            expandedSessionIds.add(sess.sessionId);
           }
+          renderSessionsView();
         });
 
-        tbody.appendChild(tr);
+        // 刪除整局紀錄按鈕
+        const delBtn = card.querySelector('.delete-session-btn');
+        if (delBtn) {
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`確定要永久刪除「第 ${sess.roundNumber} 局」的整局遊玩紀錄嗎？`)) {
+              state.gameSessions = state.gameSessions.filter(s => s.sessionId !== sess.sessionId);
+              expandedSessionIds.delete(sess.sessionId);
+              renderAll();
+              pushStateToCloud();
+            }
+          });
+        }
+
+        // 切換是否顯示未開啟格子
+        const toggleBtn = card.querySelector('.toggle-unopened-btn');
+        toggleBtn.addEventListener('click', () => {
+          showOnlyOpenedInSession[sess.sessionId] = !onlyOpened;
+          renderSessionsView();
+        });
+
+        // 填入該局每一格的資料列
+        const tbody = card.querySelector('.session-tbody');
+        if (displayCells.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                本局目前尚無已開出的格子（可點擊右上角「顯示全部格子」檢視）
+              </td>
+            </tr>
+          `;
+        } else {
+          displayCells.forEach((cell) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td class="nowrap"><strong>#${cell.number}</strong></td>
+              <td class="nowrap">
+                ${cell.opened
+                  ? `<span style="color: #06d6a0; font-weight: 800;">✅ 已開出</span>`
+                  : `<span style="color: var(--text-muted);">🔒 未開啟</span>`
+                }
+              </td>
+              <td class="nowrap">
+                <span class="record-type-badge ${cell.isGrand ? 'grand' : 'normal'}">
+                  ${cell.isGrand ? '🏆 大獎' : '🎈 一般'}
+                </span>
+              </td>
+              <td style="font-weight: 700; color: ${cell.isGrand ? 'var(--accent-gold)' : '#fff'};">
+                ${escapeHtml(cell.prizeName)}
+              </td>
+              <td>
+                <input type="text" class="inline-player-input" value="${escapeHtml(cell.winnerName || '')}" placeholder="輸入得主名字...">
+              </td>
+              <td class="nowrap" style="color: var(--text-muted); font-size: 0.84rem;">
+                ${escapeHtml(cell.openedAt || '-')}
+              </td>
+            `;
+
+            const inputEl = tr.querySelector('.inline-player-input');
+            inputEl.addEventListener('change', () => {
+              updateSessionCellWinner(sess.sessionId, cell.number, inputEl.value.trim());
+            });
+
+            tbody.appendChild(tr);
+          });
+        }
+
+        container.appendChild(card);
       });
     }
 
-    function updateWinnerNameByRecordId(recordId, newName) {
-      const rec = state.playRecords.find(r => r.id === recordId);
-      if (rec) {
-        rec.winnerName = newName;
+    function updateSessionCellWinner(sessionId, cellNumber, newName) {
+      const sess = state.gameSessions.find(s => s.sessionId === sessionId);
+      if (sess && Array.isArray(sess.cells)) {
+        const target = sess.cells.find(c => c.number === cellNumber);
+        if (target) target.winnerName = newName;
       }
-      const cell = state.cells.find(c => c.recordId === recordId);
-      if (cell) {
-        cell.winnerName = newName;
+
+      if (sessionId === state.currentSessionId) {
+        const curCell = state.cells.find(c => c.number === cellNumber);
+        if (curCell) curCell.winnerName = newName;
       }
+
       renderAll();
       pushStateToCloud();
     }
@@ -1753,16 +2037,6 @@
     // ==========================================
     // 開獎與隨機跳號輪盤動畫
     // ==========================================
-    function formatDateTime(d) {
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
-
-    function formatShortTime(d) {
-      const pad = (n) => String(n).padStart(2, '0');
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
-
     function triggerOpenCell(number) {
       if (isAnimating) return;
       const cell = state.cells.find(c => c.number === number);
@@ -1771,9 +2045,8 @@
         return;
       }
 
-      // 若已開啟，直接打開彈窗讓使用者檢視或修改得主名字
       if (cell.opened) {
-        showWinnerModal(cell);
+        showWinnerModal(cell, state.currentSessionId);
         return;
       }
 
@@ -1788,34 +2061,20 @@
 
       setTimeout(() => {
         const now = new Date();
-        const recordId = `rec_${Date.now()}_${cell.number}`;
-
         cell.opened = true;
         cell.openedAt = formatShortTime(now);
-        cell.recordId = recordId;
-
-        const newRecord = {
-          id: recordId,
-          round: state.roundNumber || 1,
-          number: cell.number,
-          prizeName: cell.prizeName,
-          isGrand: cell.isGrand,
-          winnerName: cell.winnerName || '',
-          time: formatDateTime(now)
-        };
-
-        state.playRecords.unshift(newRecord);
 
         if (cellEl) {
           cellEl.classList.remove('shaking');
           cellEl.classList.add('opened');
         }
 
+        syncCurrentCellsIntoSession();
         renderAll();
         pushStateToCloud();
 
         setTimeout(() => {
-          showWinnerModal(cell);
+          showWinnerModal(cell, state.currentSessionId);
           isAnimating = false;
         }, 280);
       }, 420);
@@ -1826,11 +2085,12 @@
       if (isAnimating) return;
       const unopened = state.cells.filter(c => !c.opened);
       if (unopened.length === 0) {
-        alert('所有格子都已經開啟完畢囉！可以點擊右上角「重新洗牌開局」再玩一次。');
+        if (confirm('🎉 本局所有格子都已經全數抽完囉！\n是否要立即開啟下一局（本局完整紀錄會保存在「各局遊玩紀錄」分頁中）？')) {
+          startNewRoundSession(state.config, false);
+        }
         return;
       }
 
-      // 若只剩最後一格，直接開獎
       if (unopened.length === 1) {
         triggerOpenCell(unopened[0].number);
         return;
@@ -1864,11 +2124,9 @@
 
         if (currentStep < totalSteps) {
           currentStep++;
-          // 由快到慢的漸進延遲
           const delay = Math.floor(45 + Math.pow(currentStep / totalSteps, 2.2) * 240);
           setTimeout(stepRoulette, delay);
         } else {
-          // 停在目標格子上，短暫停頓後觸發開獎
           setTimeout(() => {
             if (activeHighlightEl) {
               activeHighlightEl.classList.remove('roulette-active');
@@ -1885,9 +2143,9 @@
     // ==========================================
     // 中獎彈窗與玩家姓名綁定
     // ==========================================
-    function showWinnerModal(cell) {
+    function showWinnerModal(cell, sessionId) {
+      currentEditingSessionId = sessionId || state.currentSessionId;
       currentEditingCellNumber = cell.number;
-      currentEditingRecordId = cell.recordId;
 
       const backdrop = document.getElementById('winnerModalBackdrop');
       const card = document.getElementById('winnerModalCard');
@@ -1897,7 +2155,7 @@
       const prizeName = document.getElementById('winnerPrizeName');
       const playerInput = document.getElementById('winnerPlayerInput');
 
-      numTag.textContent = `第 ${cell.number} 號格`;
+      numTag.textContent = `第 ${state.roundNumber} 局 - 第 ${cell.number} 號格`;
       prizeName.textContent = cell.prizeName;
       playerInput.value = cell.winnerName || '';
 
@@ -1923,25 +2181,26 @@
       const playerName = playerInput.value.trim();
 
       if (currentEditingCellNumber !== null) {
-        const cell = state.cells.find(c => c.number === currentEditingCellNumber);
-        if (cell) {
-          cell.winnerName = playerName;
-        }
-      }
-
-      if (currentEditingRecordId) {
-        const rec = state.playRecords.find(r => r.id === currentEditingRecordId);
-        if (rec) {
-          rec.winnerName = playerName;
-        }
+        updateSessionCellWinner(
+          currentEditingSessionId || state.currentSessionId,
+          currentEditingCellNumber,
+          playerName
+        );
       }
 
       document.getElementById('winnerModalBackdrop').classList.remove('active');
+      currentEditingSessionId = null;
       currentEditingCellNumber = null;
-      currentEditingRecordId = null;
 
-      renderAll();
-      pushStateToCloud();
+      // 若本局已經全部抽完，貼心提醒可開啟下一局
+      const unopenedCount = state.cells.filter(c => !c.opened).length;
+      if (unopenedCount === 0) {
+        setTimeout(() => {
+          if (confirm('🎊 恭喜！第 ' + state.roundNumber + ' 局的所有格子已全部抽完！\n本局完整紀錄已保存在「各局遊玩紀錄」分頁中。\n\n是否要立即洗牌開啟下一局？')) {
+            startNewRoundSession(state.config, false);
+          }
+        }, 250);
+      }
     }
 
     // ==========================================
@@ -2116,37 +2375,46 @@
         connectCloudWebSocket();
       }
 
-      initNewGame({
+      startNewRoundSession({
         totalCells,
         consolationName,
         prizes: newPrizes
-      }, true);
+      }, false);
 
       document.getElementById('settingsModalBackdrop').classList.remove('active');
     }
 
     function exportRecordsToCsv() {
-      if (!state.playRecords || state.playRecords.length === 0) {
-        alert('目前尚無任何遊玩紀錄可匯出！');
+      syncCurrentCellsIntoSession();
+      if (!state.gameSessions || state.gameSessions.length === 0) {
+        alert('目前尚無任何局數紀錄可匯出！');
         return;
       }
 
-      const headers = ['開獎時間', '局數', '格號', '類型', '獲得獎勵', '得主姓名'];
-      const rows = state.playRecords.map(r => [
-        `"${(r.time || '').replace(/"/g, '""')}"`,
-        `"第 ${r.round || 1} 局"`,
-        `"#${r.number}"`,
-        `"${r.isGrand ? '大獎' : '一般'}"`,
-        `"${(r.prizeName || '').replace(/"/g, '""')}"`,
-        `"${(r.winnerName || '').replace(/"/g, '""')}"`
-      ]);
+      const headers = ['局數', '開局時間', '格號', '狀態', '類型', '獎勵內容', '得主姓名', '開出時間'];
+      const rows = [];
+
+      state.gameSessions.forEach((sess) => {
+        (sess.cells || []).forEach((c) => {
+          rows.push([
+            `"第 ${sess.roundNumber} 局"`,
+            `"${(sess.startedAt || '').replace(/"/g, '""')}"`,
+            `"#${c.number}"`,
+            `"${c.opened ? '已開出' : '未開啟'}"`,
+            `"${c.isGrand ? '大獎' : '一般'}"`,
+            `"${(c.prizeName || '').replace(/"/g, '""')}"`,
+            `"${(c.winnerName || '').replace(/"/g, '""')}"`,
+            `"${(c.openedAt || '').replace(/"/g, '""')}"`
+          ]);
+        });
+      });
 
       const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `抽獎遊玩紀錄_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `抽獎各局完整紀錄_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -2168,7 +2436,6 @@
     // ==========================================
     // 事件綁定
     // ==========================================
-    // 分頁切換
     document.getElementById('tabBtnGame').addEventListener('click', () => {
       document.getElementById('tabBtnGame').classList.add('active');
       document.getElementById('tabBtnRecords').classList.remove('active');
@@ -2181,10 +2448,9 @@
       document.getElementById('tabBtnGame').classList.remove('active');
       document.getElementById('viewRecords').classList.add('active');
       document.getElementById('viewGame').classList.remove('active');
-      renderPlayRecordsTable();
+      renderSessionsView();
     });
 
-    // 中獎彈窗確認與 Enter 儲存
     document.getElementById('confirmWinnerBtn').addEventListener('click', saveWinnerAndCloseModal);
     document.getElementById('winnerPlayerInput').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') saveWinnerAndCloseModal();
@@ -2193,7 +2459,6 @@
       if (e.target.id === 'winnerModalBackdrop') saveWinnerAndCloseModal();
     });
 
-    // 設定彈窗
     document.getElementById('openSettingsBtn').addEventListener('click', openSettingsModal);
     document.getElementById('cloudSyncPill').addEventListener('click', openSettingsModal);
     document.getElementById('closeSettingsCrossBtn').addEventListener('click', () => {
@@ -2219,21 +2484,23 @@
     document.getElementById('inputTotalCells').addEventListener('input', updateAllocationSummary);
     document.getElementById('saveSettingsBtn').addEventListener('click', saveSettingsAndStart);
 
-    // 重新洗牌開新局（保留歷史遊玩紀錄）
+    // 開啟下一局（將本局整局封存保留，並產生新一局的紀錄）
     document.getElementById('resetBoardBtn').addEventListener('click', () => {
-      if (confirm('確定要重新洗牌並開啟新一局嗎？\n（註：「遊玩紀錄」分頁中的歷史紀錄仍會完整保留）')) {
-        initNewGame(state.config, true);
+      const openedCount = state.cells.filter(c => c.opened).length;
+      const msg = openedCount > 0
+        ? `確定要結束目前「第 ${state.roundNumber} 局」並開啟下一局嗎？\n（第 ${state.roundNumber} 局的整局結果會完整保留在「各局遊玩紀錄」分頁中）`
+        : `目前第 ${state.roundNumber} 局尚未開啟任何格子，確定要重新洗牌嗎？`;
+      if (confirm(msg)) {
+        startNewRoundSession(state.config, false);
       }
     });
 
-    // 音效開關
     document.getElementById('soundToggleBtn').addEventListener('click', () => {
       state.soundEnabled = !state.soundEnabled;
       updateSoundButton();
       saveLocalState();
     });
 
-    // 叫號開獎
     function handleCallNumber() {
       const input = document.getElementById('callNumberInput');
       const num = parseInt(input.value, 10);
@@ -2250,23 +2517,24 @@
       if (e.key === 'Enter') handleCallNumber();
     });
 
-    // 隨機輪盤跳號開獎
     document.getElementById('randomPickBtn').addEventListener('click', startRouletteRandomPick);
 
-    // 遊玩紀錄分頁搜尋、匯出、清空
-    document.getElementById('recordSearchInput').addEventListener('input', renderPlayRecordsTable);
+    document.getElementById('recordSearchInput').addEventListener('input', renderSessionsView);
     document.getElementById('exportCsvBtn').addEventListener('click', exportRecordsToCsv);
     document.getElementById('clearAllRecordsBtn').addEventListener('click', () => {
-      if (!state.playRecords || state.playRecords.length === 0) return;
-      if (confirm('⚠️ 確定要永久清空所有歷史遊玩紀錄嗎？此操作會同步刪除雲端上的歷史紀錄且無法復原！')) {
-        state.playRecords = [];
-        state.cells.forEach(c => { c.winnerName = ''; });
-        renderAll();
-        pushStateToCloud();
+      if (state.gameSessions.length <= 1 && state.cells.every(c => !c.opened)) {
+        alert('目前沒有已封存的歷史局數可清空！');
+        return;
+      }
+      if (confirm('⚠️ 確定要刪除所有歷史局數紀錄，並重置回「第 1 局」嗎？\n此操作會同步刪除雲端上的歷史局數且無法復原！')) {
+        state.gameSessions = [];
+        state.roundNumber = 1;
+        state.currentSessionId = '';
+        expandedSessionIds.clear();
+        startNewRoundSession(state.config, true);
       }
     });
 
-    // 啟動遊戲並載入雲端狀態
     loadInitialState();
   </script>
 </body>
