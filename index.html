@@ -548,6 +548,7 @@
       display: flex;
       flex-direction: column;
       gap: 18px;
+      min-width: 0;
     }
 
     .panel-card {
@@ -558,6 +559,8 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .panel-title {
@@ -1239,8 +1242,9 @@
 
     .form-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+      width: 100%;
     }
 
     @media (max-width: 560px) {
@@ -1253,6 +1257,8 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
+      width: 100%;
     }
 
     .form-group label {
@@ -1262,6 +1268,9 @@
     }
 
     .form-control {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
       background: rgba(0, 0, 0, 0.35);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 10px;
@@ -1291,9 +1300,10 @@
 
     .prize-row {
       display: grid;
-      grid-template-columns: 1fr 95px 40px;
+      grid-template-columns: minmax(0, 1fr) 95px 40px;
       gap: 10px;
       align-items: center;
+      width: 100%;
     }
 
     .btn-icon {
