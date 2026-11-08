@@ -1403,8 +1403,8 @@
     </div>
 
     <div class="header-actions">
-      <!-- 雲端同步狀態與房間設定 -->
-      <div class="sync-pill" id="cloudSyncPill" title="點擊可檢視或切換雲端同步房間代碼">
+      <!-- 雲端同步狀態指示（點擊可立即從雲端讀取最新資料，不顯示任何房間代碼） -->
+      <div class="sync-pill" id="cloudSyncPill" title="點擊立即與雲端同步最新資料">
         <span class="sync-dot"></span>
         <span id="cloudSyncText">雲端已同步</span>
       </div>
@@ -1619,12 +1619,12 @@
   </div>
 
   <!-- ==========================================
-       戳戳樂獎項與雲端房間設定視窗
+       戳戳樂獎項與格子設定視窗（隱藏雲端代碼）
        ========================================== -->
   <div class="modal-backdrop" id="settingsModalBackdrop">
     <div class="settings-modal">
       <div class="settings-header">
-        <h2>⚙️ 幸運戳戳樂與雲端同步設定</h2>
+        <h2>⚙️ 幸運戳戳樂獎項與格子設定</h2>
         <button class="btn" id="closeSettingsCrossBtn" style="padding: 4px 10px;">✕</button>
       </div>
 
@@ -1637,14 +1637,6 @@
           <div class="form-group">
             <label for="inputConsolationName">其餘格子預設獎勵（安慰獎/參加獎）</label>
             <input type="text" id="inputConsolationName" class="form-control" value="銘謝惠顧" placeholder="例如：銘謝惠顧、參加獎">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="inputCloudRoom">☁️ 雲端同步房間代碼（所有人使用相同代碼即可跨裝置看到一致的資料）</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="text" id="inputCloudRoom" class="form-control" style="flex: 1;" value="nono86433_lucky_draw_v1">
-            <button type="button" class="btn" id="forcePullCloudBtn" title="立即從雲端拉取最新狀態">🔄 立即從雲端讀取</button>
           </div>
         </div>
 
@@ -3188,7 +3180,6 @@
     function openSettingsModal() {
       document.getElementById('inputTotalCells').value = state.config.totalCells;
       document.getElementById('inputConsolationName').value = state.config.consolationName;
-      document.getElementById('inputCloudRoom').value = state.cloudRoom || DEFAULT_CLOUD_ROOM;
 
       const container = document.getElementById('prizeRowsContainer');
       container.innerHTML = '';
@@ -3263,7 +3254,6 @@
       }
 
       const consolationName = document.getElementById('inputConsolationName').value.trim() || '銘謝惠顧';
-      const newRoom = document.getElementById('inputCloudRoom').value.trim() || DEFAULT_CLOUD_ROOM;
       const rows = document.querySelectorAll('#prizeRowsContainer .prize-row');
       const newPrizes = [];
       let grandTotal = 0;
@@ -3284,12 +3274,6 @@
       if (grandTotal > totalCells) {
         alert(`大獎總數量 (${grandTotal} 個) 不能超過抽獎總格子數 (${totalCells} 格)！`);
         return;
-      }
-
-      const roomChanged = state.cloudRoom !== newRoom;
-      state.cloudRoom = newRoom;
-      if (roomChanged) {
-        connectCloudWebSocket();
       }
 
       startNewRoundSession({
@@ -3479,22 +3463,16 @@
       if (e.target.id === 'winnerModalBackdrop') saveWinnerAndCloseModal();
     });
 
-    // 設定彈窗
+    // 設定彈窗與手動觸發雲端同步
     document.getElementById('openSettingsBtn').addEventListener('click', openSettingsModal);
-    document.getElementById('cloudSyncPill').addEventListener('click', openSettingsModal);
+    document.getElementById('cloudSyncPill').addEventListener('click', async () => {
+      await pullStateFromCloud(true);
+    });
     document.getElementById('closeSettingsCrossBtn').addEventListener('click', () => {
       document.getElementById('settingsModalBackdrop').classList.remove('active');
     });
     document.getElementById('cancelSettingsBtn').addEventListener('click', () => {
       document.getElementById('settingsModalBackdrop').classList.remove('active');
-    });
-
-    document.getElementById('forcePullCloudBtn').addEventListener('click', async () => {
-      const newRoom = document.getElementById('inputCloudRoom').value.trim() || DEFAULT_CLOUD_ROOM;
-      state.cloudRoom = newRoom;
-      connectCloudWebSocket();
-      await pullStateFromCloud(true);
-      alert('已從雲端同步最新資料！');
     });
 
     document.getElementById('addPrizeRowBtn').addEventListener('click', () => {
