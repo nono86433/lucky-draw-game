@@ -1862,9 +1862,12 @@
         const grandTotalCount = cells.filter(c => c.isGrand).length;
         const isAllOpened = cells.length > 0 && openedCount === cells.length;
 
-        // 若有搜尋關鍵字，過濾該局內的格子
+        // 防作弊保護：任何「尚未開啟 (!c.opened)」的格子，絕對不可在搜尋或紀錄中洩露獎項！
         const matchingCells = cells.filter((c) => {
           if (!keyword) return true;
+          if (!c.opened) {
+            return String(c.number).includes(keyword);
+          }
           return (
             (c.prizeName || '').toLowerCase().includes(keyword) ||
             (c.winnerName || '').toLowerCase().includes(keyword) ||
@@ -1877,7 +1880,8 @@
         }
 
         const isExpanded = expandedSessionIds.has(sess.sessionId) || Boolean(keyword);
-        const onlyOpened = showOnlyOpenedInSession[sess.sessionId] !== false; // 預設只顯示已開出的格子，可切換顯示全部格子
+        // 紀錄表只列出「已開出」的格子，或將未開啟格子徹底遮蔽為「❓ 尚未開獎」防止偷看作弊
+        const onlyOpened = showOnlyOpenedInSession[sess.sessionId] !== false;
         const displayCells = onlyOpened ? matchingCells.filter(c => c.opened) : matchingCells;
 
         const card = document.createElement('div');
@@ -1908,11 +1912,11 @@
           <div class="session-card-body">
             <div class="session-filter-row">
               <div style="font-size: 0.88rem; color: var(--text-muted);">
-                📋 <strong>第 ${sess.roundNumber} 局完整結果清單</strong>（可直接修改該局得主姓名）
+                📋 <strong>第 ${sess.roundNumber} 局開獎結果清單</strong>（未開出的格子全程保密防作弊）
               </div>
               <div style="display: flex; gap: 8px; align-items: center;">
                 <button type="button" class="btn toggle-unopened-btn" style="padding: 5px 12px; font-size: 0.82rem;">
-                  ${onlyOpened ? `👁️ 顯示全部 ${cells.length} 格（含未開）` : `👁️ 僅顯示已開出 (${openedCount} 格)`}
+                  ${onlyOpened ? `👁️ 顯示全部格號狀態 (${cells.length} 格)` : `👁️ 僅顯示已開出 (${openedCount} 格)`}
                 </button>
               </div>
             </div>
@@ -1968,47 +1972,66 @@
           renderSessionsView();
         });
 
-        // 填入該局每一格的資料列
+        // 填入該局每一格的資料列（未開啟的格子嚴格保密，不顯示類型與獎項名稱）
         const tbody = card.querySelector('.session-tbody');
         if (displayCells.length === 0) {
           tbody.innerHTML = `
             <tr>
               <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">
-                本局目前尚無已開出的格子（可點擊右上角「顯示全部格子」檢視）
+                本局目前尚無已開出的格子
               </td>
             </tr>
           `;
         } else {
           displayCells.forEach((cell) => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td class="nowrap"><strong>#${cell.number}</strong></td>
-              <td class="nowrap">
-                ${cell.opened
-                  ? `<span style="color: #06d6a0; font-weight: 800;">✅ 已開出</span>`
-                  : `<span style="color: var(--text-muted);">🔒 未開啟</span>`
-                }
-              </td>
-              <td class="nowrap">
-                <span class="record-type-badge ${cell.isGrand ? 'grand' : 'normal'}">
-                  ${cell.isGrand ? '🏆 大獎' : '🎈 一般'}
-                </span>
-              </td>
-              <td style="font-weight: 700; color: ${cell.isGrand ? 'var(--accent-gold)' : '#fff'};">
-                ${escapeHtml(cell.prizeName)}
-              </td>
-              <td>
-                <input type="text" class="inline-player-input" value="${escapeHtml(cell.winnerName || '')}" placeholder="輸入得主名字...">
-              </td>
-              <td class="nowrap" style="color: var(--text-muted); font-size: 0.84rem;">
-                ${escapeHtml(cell.openedAt || '-')}
-              </td>
-            `;
+            if (cell.opened) {
+              tr.innerHTML = `
+                <td class="nowrap"><strong>#${cell.number}</strong></td>
+                <td class="nowrap">
+                  <span style="color: #06d6a0; font-weight: 800;">✅ 已開出</span>
+                </td>
+                <td class="nowrap">
+                  <span class="record-type-badge ${cell.isGrand ? 'grand' : 'normal'}">
+                    ${cell.isGrand ? '🏆 大獎' : '🎈 一般'}
+                  </span>
+                </td>
+                <td style="font-weight: 700; color: ${cell.isGrand ? 'var(--accent-gold)' : '#fff'};">
+                  ${escapeHtml(cell.prizeName)}
+                </td>
+                <td>
+                  <input type="text" class="inline-player-input" value="${escapeHtml(cell.winnerName || '')}" placeholder="輸入得主名字...">
+                </td>
+                <td class="nowrap" style="color: var(--text-muted); font-size: 0.84rem;">
+                  ${escapeHtml(cell.openedAt || '-')}
+                </td>
+              `;
 
-            const inputEl = tr.querySelector('.inline-player-input');
-            inputEl.addEventListener('change', () => {
-              updateSessionCellWinner(sess.sessionId, cell.number, inputEl.value.trim());
-            });
+              const inputEl = tr.querySelector('.inline-player-input');
+              inputEl.addEventListener('change', () => {
+                updateSessionCellWinner(sess.sessionId, cell.number, inputEl.value.trim());
+              });
+            } else {
+              // 尚未開啟的格子：完全隱藏類型與獎勵內容，防止偷看作弊
+              tr.innerHTML = `
+                <td class="nowrap"><strong>#${cell.number}</strong></td>
+                <td class="nowrap">
+                  <span style="color: var(--text-muted);">🔒 未開啟</span>
+                </td>
+                <td class="nowrap">
+                  <span class="record-type-badge normal" style="opacity: 0.6;">❓ 保密</span>
+                </td>
+                <td style="color: var(--text-muted); font-style: italic;">
+                  🔒 尚未開獎（內容保密）
+                </td>
+                <td style="color: var(--text-muted); font-size: 0.84rem;">
+                  -
+                </td>
+                <td class="nowrap" style="color: var(--text-muted); font-size: 0.84rem;">
+                  -
+                </td>
+              `;
+            }
 
             tbody.appendChild(tr);
           });
@@ -2401,10 +2424,10 @@
             `"${(sess.startedAt || '').replace(/"/g, '""')}"`,
             `"#${c.number}"`,
             `"${c.opened ? '已開出' : '未開啟'}"`,
-            `"${c.isGrand ? '大獎' : '一般'}"`,
-            `"${(c.prizeName || '').replace(/"/g, '""')}"`,
-            `"${(c.winnerName || '').replace(/"/g, '""')}"`,
-            `"${(c.openedAt || '').replace(/"/g, '""')}"`
+            `"${c.opened ? (c.isGrand ? '大獎' : '一般') : '保密'}"`,
+            `"${c.opened ? (c.prizeName || '').replace(/"/g, '""') : '尚未開獎（內容保密）'}"`,
+            `"${c.opened ? (c.winnerName || '').replace(/"/g, '""') : '-'}"`,
+            `"${(c.openedAt || '-').replace(/"/g, '""')}"`
           ]);
         });
       });
